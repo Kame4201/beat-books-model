@@ -1,0 +1,21 @@
+# Database (read-only)
+sqlalchemy
+psycopg2-binary
+
+# Data processing
+pandas
+numpy
+
+# ML models
+scikit-learn
+xgboost
+lightgbm
+joblib
+
+# Configuration
+pydantic
+pydantic-settings
+
+# Testing
+pytest
+pytest-cov

@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment
+.env
+.venv/
+venv/
+
+# Model artifacts (large binary files)
+model_artifacts/*.pkl
+model_artifacts/*.joblib
+model_artifacts/*.json
+!model_artifacts/.gitkeep
+
+# Backtest results
+backtest_results/
+
+# IDE
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
