@@ -9,31 +9,78 @@ on:
     types: [opened, assigned]
   pull_request_review:
     types: [submitted]
+  # NEW: automatically run on promotion PRs (Dev -> stage, stage -> main)
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [stage, main] # base branch only
 
 jobs:
   claude:
+    # 1) Allow @claude on issues anywhere
+    # 2) Allow @claude on PRs ONLY when base branch is stage or main (blocks feature -> Dev)
+    # 3) Auto-run ONLY for Dev -> stage OR stage -> main promotion PRs (release notes / doc prompt)
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      (
+        # Auto-run on promotion PRs
+        (github.event_name == 'pull_request' &&
+          (
+            (github.base_ref == 'stage' && github.head_ref == 'Dev') ||
+            (github.base_ref == 'main' && github.head_ref == 'stage')
+          )
+        )
+        ||
+        # On-demand runs when someone tags @claude
+        (
+          (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+          (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+          (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+          (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+        )
+      )
+      &&
+      (
+        # Always allow issues
+        github.event_name == 'issues'
+        ||
+        # For PR-related events, only allow if base is stage or main
+        (
+          github.event_name != 'issues'
+          &&
+          (
+            github.base_ref == 'stage' ||
+            github.base_ref == 'main'
+          )
+        )
+      )
+
     runs-on: ubuntu-latest
+
     permissions:
-      contents: write
-      pull-requests: write
-      issues: write
+      contents: read
+      pull-requests: write  # CHANGED: allow commenting on PRs
+      issues: read
       id-token: write
-      actions: read
+      actions: read # Required for Claude to read CI results on PRs
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0 # CHANGED: better context for release notes / diffs
 
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          # This is an optional setting that allows Claude to read CI results on PRs
           additional_permissions: |
             actions: read
+
+          # If this is a promotion PR, guide Claude to produce release notes / documentation.
+          # Otherwise, Claude will follow the @claude comment instructions.
+          prompt: ${{ (github.event_name == 'pull_request' && ((github.base_ref == 'stage' && github.head_ref == 'Dev') || (github.base_ref == 'main' && github.head_ref == 'stage'))) && format('You are reviewing a promotion pull request ({0} -> {1}).\n\n1) Summarize the changes at a release-notes level.\n2) Call out breaking changes, migrations, config/infra impacts, and risk areas.\n3) Suggest test/verification steps.\n4) Produce a \"Release Notes\" section suitable for copy/paste into the PR description.\nPost your output as a PR comment.', github.head_ref, github.base_ref) || '' }}
+
+          # Optional: Add claude_args to customize behavior and configuration
+          # claude_args: '--allowed-tools Bash(gh pr:*)'
