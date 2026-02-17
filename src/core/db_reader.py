@@ -4,6 +4,7 @@ Read-only database connection to the shared BeatTheBooks PostgreSQL database.
 CRITICAL: This repo NEVER creates, alters, or drops tables.
 All schema changes go through beat-books-data via Alembic migrations.
 """
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
