@@ -3,6 +3,7 @@ Evaluation metrics for backtesting.
 
 All metrics functions take predictions and return calculated values.
 """
+
 import numpy as np
 from typing import List, Tuple, Optional
 from src.backtesting.types import PredictionRecord
@@ -14,9 +15,12 @@ def calculate_accuracy(predictions: List[PredictionRecord]) -> float:
         return 0.0
 
     correct = sum(
-        1 for p in predictions
-        if p.predicted_home_win_prob >= 0.5 and p.actual_home_win
-        or p.predicted_home_win_prob < 0.5 and not p.actual_home_win
+        1
+        for p in predictions
+        if p.predicted_home_win_prob >= 0.5
+        and p.actual_home_win
+        or p.predicted_home_win_prob < 0.5
+        and not p.actual_home_win
     )
     return correct / len(predictions)
 
@@ -235,7 +239,9 @@ def calculate_sharpe_ratio(
     return float(sharpe)
 
 
-def calculate_clv(predictions: List[PredictionRecord]) -> Tuple[Optional[float], int, int]:
+def calculate_clv(
+    predictions: List[PredictionRecord],
+) -> Tuple[Optional[float], int, int]:
     """
     Calculate Closing Line Value (CLV).
 
@@ -246,7 +252,8 @@ def calculate_clv(predictions: List[PredictionRecord]) -> Tuple[Optional[float],
         (average_clv, clv_wins, clv_total)
     """
     clv_games = [
-        p for p in predictions
+        p
+        for p in predictions
         if p.bet_placed and p.closing_line is not None and p.market_spread is not None
     ]
 
@@ -297,8 +304,10 @@ def calculate_edge_bucket_accuracy(
 
         edge = abs(p.predicted_home_win_prob - p.market_home_win_prob)
         predicted_correct = (
-            p.predicted_home_win_prob >= 0.5 and p.actual_home_win
-            or p.predicted_home_win_prob < 0.5 and not p.actual_home_win
+            p.predicted_home_win_prob >= 0.5
+            and p.actual_home_win
+            or p.predicted_home_win_prob < 0.5
+            and not p.actual_home_win
         )
 
         if 0.01 <= edge < 0.03:

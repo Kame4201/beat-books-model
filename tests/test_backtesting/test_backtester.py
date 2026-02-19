@@ -1,6 +1,7 @@
 """
 Tests for the main Backtester class.
 """
+
 import pytest
 import pandas as pd
 import numpy as np
@@ -21,25 +22,27 @@ def sample_game_data():
                 home_score = np.random.randint(14, 35)
                 away_score = np.random.randint(14, 35)
 
-                data.append({
-                    "season": season,
-                    "week": week,
-                    "game_id": game_id,
-                    "home_team": f"TEAM_{game % 4}",
-                    "away_team": f"TEAM_{(game + 1) % 4}",
-                    "home_score": home_score,
-                    "away_score": away_score,
-                    "home_win": home_score > away_score,
-                    "spread": float(home_score - away_score),
-                    # Features
-                    "home_offense_rating": np.random.uniform(0.4, 0.6),
-                    "away_offense_rating": np.random.uniform(0.4, 0.6),
-                    "home_defense_rating": np.random.uniform(0.4, 0.6),
-                    "away_defense_rating": np.random.uniform(0.4, 0.6),
-                    # Market data
-                    "market_spread": np.random.uniform(-7, 7),
-                    "market_odds": -110,
-                })
+                data.append(
+                    {
+                        "season": season,
+                        "week": week,
+                        "game_id": game_id,
+                        "home_team": f"TEAM_{game % 4}",
+                        "away_team": f"TEAM_{(game + 1) % 4}",
+                        "home_score": home_score,
+                        "away_score": away_score,
+                        "home_win": home_score > away_score,
+                        "spread": float(home_score - away_score),
+                        # Features
+                        "home_offense_rating": np.random.uniform(0.4, 0.6),
+                        "away_offense_rating": np.random.uniform(0.4, 0.6),
+                        "home_defense_rating": np.random.uniform(0.4, 0.6),
+                        "away_defense_rating": np.random.uniform(0.4, 0.6),
+                        # Market data
+                        "market_spread": np.random.uniform(-7, 7),
+                        "market_odds": -110,
+                    }
+                )
 
     return pd.DataFrame(data)
 
@@ -101,11 +104,13 @@ def test_backtester_validate_data_missing_required(simple_config):
     backtester = Backtester(simple_config)
 
     # Missing required columns
-    bad_data = pd.DataFrame({
-        "season": [2024],
-        "week": [1],
-        # Missing other required columns
-    })
+    bad_data = pd.DataFrame(
+        {
+            "season": [2024],
+            "week": [1],
+            # Missing other required columns
+        }
+    )
 
     with pytest.raises(ValueError, match="Missing required columns"):
         backtester._validate_data(bad_data, ["feature1"], "home_win")
@@ -124,10 +129,12 @@ def test_backtester_get_data_for_periods(simple_config, sample_game_data):
     backtester = Backtester(simple_config)
 
     # Get data for week 1-3 of 2023
-    periods = pd.DataFrame({
-        "season": [2023, 2023, 2023],
-        "week": [1, 2, 3],
-    })
+    periods = pd.DataFrame(
+        {
+            "season": [2023, 2023, 2023],
+            "week": [1, 2, 3],
+        }
+    )
 
     result = backtester._get_data_for_periods(sample_game_data, periods)
 
@@ -188,7 +195,10 @@ def test_backtester_run_no_data_leakage(simple_config, sample_game_data, mock_mo
 
     # Verify predictions are only made after initial training window
     first_pred = result.predictions[0]
-    assert first_pred.week > simple_config.initial_training_weeks or first_pred.season > 2023
+    assert (
+        first_pred.week > simple_config.initial_training_weeks
+        or first_pred.season > 2023
+    )
 
     # Verify model was fit multiple times (once per step)
     assert mock_model.fit.call_count > 1

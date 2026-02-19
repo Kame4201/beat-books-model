@@ -1,7 +1,7 @@
 """
 Bankroll simulation and bet sizing strategies.
 """
-import numpy as np
+
 from typing import Optional, Tuple
 from src.backtesting.types import BacktestConfig, BetSizingMethod
 

@@ -1,14 +1,15 @@
 """
 Data structures for backtesting framework.
 """
+
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
 from typing import List, Dict, Any, Optional
 
 
 class BetSizingMethod(str, Enum):
     """Bet sizing methods."""
+
     FLAT = "flat"
     PERCENTAGE = "percentage"
     KELLY = "kelly"
@@ -33,7 +34,9 @@ class BacktestConfig:
     bet_sizing_method: BetSizingMethod = BetSizingMethod.KELLY
     kelly_fraction: float = 0.25  # fractional Kelly (conservative)
     flat_bet_size: Optional[float] = None  # for FLAT method
-    percentage_bet_size: Optional[float] = None  # for PERCENTAGE method (e.g., 0.02 = 2%)
+    percentage_bet_size: Optional[float] = (
+        None  # for PERCENTAGE method (e.g., 0.02 = 2%)
+    )
 
     # Betting constraints
     min_edge: float = 0.01  # only bet if edge > 1%

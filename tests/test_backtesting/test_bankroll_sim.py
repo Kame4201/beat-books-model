@@ -1,6 +1,7 @@
 """
 Tests for bankroll simulation and bet sizing.
 """
+
 import pytest
 from src.backtesting.bankroll_sim import (
     BankrollTracker,
@@ -24,6 +25,7 @@ def flat_config():
         end_date="2024-W17",
         bet_sizing_method=BetSizingMethod.FLAT,
         flat_bet_size=100.0,
+        max_bet_fraction=1.0,
     )
 
 

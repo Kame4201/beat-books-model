@@ -9,11 +9,11 @@ This module implements expanding window walk-forward validation:
 
 CRITICAL: No data leakage - features and training data only include past games.
 """
+
 import json
-import os
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Any, Protocol
+from typing import List, Protocol
 import pandas as pd
 import numpy as np
 
@@ -110,7 +110,9 @@ class Backtester:
         data = data.sort_values(["season", "week"]).reset_index(drop=True)
 
         # Get unique (season, week) combinations
-        time_periods = data[["season", "week"]].drop_duplicates().sort_values(["season", "week"])
+        time_periods = (
+            data[["season", "week"]].drop_duplicates().sort_values(["season", "week"])
+        )
 
         # Initialize tracking
         run_id = f"backtest_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -121,9 +123,11 @@ class Backtester:
         print(f"Initial training weeks: {self.config.initial_training_weeks}")
 
         # Walk forward through time
-        for i in range(self.config.initial_training_weeks, total_periods, self.config.step_size):
+        for i in range(
+            self.config.initial_training_weeks, total_periods, self.config.step_size
+        ):
             train_periods = time_periods.iloc[:i]
-            test_period = time_periods.iloc[i:i + self.config.step_size]
+            test_period = time_periods.iloc[i : i + self.config.step_size]
 
             if test_period.empty:
                 break
@@ -139,8 +143,10 @@ class Backtester:
             X_train = train_data[feature_columns]
             y_train = train_data[target_column]
 
-            print(f"Training on {len(train_data)} games, predicting {len(test_data)} games "
-                  f"(Season {test_data['season'].iloc[0]}, Week {test_data['week'].iloc[0]})")
+            print(
+                f"Training on {len(train_data)} games, predicting {len(test_data)} games "
+                f"(Season {test_data['season'].iloc[0]}, Week {test_data['week'].iloc[0]})"
+            )
 
             model.fit(X_train, y_train)
 
@@ -181,8 +187,15 @@ class Backtester:
     ):
         """Validate that data has required columns."""
         required = [
-            "season", "week", "game_id", "home_team", "away_team",
-            "home_score", "away_score", "home_win", "spread"
+            "season",
+            "week",
+            "game_id",
+            "home_team",
+            "away_team",
+            "home_score",
+            "away_score",
+            "home_win",
+            "spread",
         ]
         missing = [col for col in required if col not in data.columns]
         if missing:
@@ -222,7 +235,9 @@ class Backtester:
         """
         for idx, (i, row) in enumerate(test_data.iterrows()):
             # Get prediction (assuming binary classification: [prob_away_win, prob_home_win])
-            predicted_home_prob = float(probas[idx][1] if probas.ndim > 1 else probas[idx])
+            predicted_home_prob = float(
+                probas[idx][1] if probas.ndim > 1 else probas[idx]
+            )
 
             # Get market data if available
             market_spread = row.get("market_spread", None)
@@ -338,7 +353,9 @@ class Backtester:
         avg_clv, clv_wins, clv_total = calculate_clv(self.predictions)
 
         # Edge buckets
-        edge_1_3, edge_3_5, edge_5_plus = calculate_edge_bucket_accuracy(self.predictions)
+        edge_1_3, edge_3_5, edge_5_plus = calculate_edge_bucket_accuracy(
+            self.predictions
+        )
 
         # ATS when disagree
         ats_record, ats_win_rate = calculate_ats_when_disagree(self.predictions)
@@ -383,7 +400,9 @@ class Backtester:
         print(f"Results saved to: {filepath}")
 
 
-def load_backtest_result(run_id: str, results_dir: str = "backtest_results") -> BacktestResult:
+def load_backtest_result(
+    run_id: str, results_dir: str = "backtest_results"
+) -> BacktestResult:
     """
     Load a previously saved backtest result.
 

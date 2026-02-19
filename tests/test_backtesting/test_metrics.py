@@ -1,6 +1,9 @@
 """
 Tests for backtesting metrics calculations.
 """
+
+import math
+
 import pytest
 from src.backtesting.types import PredictionRecord
 from src.backtesting import metrics
@@ -47,6 +50,7 @@ def sample_predictions():
             actual_spread=4.0,
             market_home_win_prob=0.50,
             market_spread=0.0,
+            closing_line=0.5,
             bet_placed=True,
             bet_type="moneyline",
             bet_amount=100.0,
@@ -69,6 +73,7 @@ def sample_predictions():
             actual_spread=4.0,
             market_home_win_prob=0.55,
             market_spread=-2.5,
+            closing_line=-3.0,
             bet_placed=True,
             bet_type="moneyline",
             bet_amount=150.0,
@@ -191,7 +196,9 @@ def test_calculate_roi_no_bets():
 def test_calculate_max_drawdown(sample_predictions):
     """Test max drawdown calculation."""
     starting_bankroll = 1000.0
-    max_dd, max_dd_pct = metrics.calculate_max_drawdown(sample_predictions, starting_bankroll)
+    max_dd, max_dd_pct = metrics.calculate_max_drawdown(
+        sample_predictions, starting_bankroll
+    )
 
     # After game 1: 1000 + 91 = 1091 (new peak)
     # After game 2: 1091 + 100 = 1191 (new peak)
@@ -205,8 +212,7 @@ def test_calculate_sharpe_ratio(sample_predictions):
     """Test Sharpe ratio calculation."""
     sharpe = metrics.calculate_sharpe_ratio(sample_predictions)
     # Should be finite
-    assert not pytest.approx(float("inf"))
-    assert not pytest.approx(float("-inf"))
+    assert math.isfinite(sharpe)
 
 
 def test_calculate_sharpe_ratio_insufficient_data():
