@@ -4,6 +4,7 @@ Abstract base class for all prediction models in beat-books-model.
 All models (Win/Loss classification, Spread regression) inherit from this base class
 to ensure consistent interface for training, prediction, evaluation, and serialization.
 """
+
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, Optional

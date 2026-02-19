@@ -10,6 +10,7 @@ Outputs:
 - Predicted spread: negative = home favored, positive = away favored
 - Confidence intervals (for applicable models)
 """
+
 from typing import Any, Dict, Optional
 import numpy as np
 import pandas as pd
@@ -179,10 +180,12 @@ class SpreadModel(BasePredictor):
         # This is a placeholder - could be improved with proper calibration
         confidence = np.clip(np.abs(predictions) / 14.0, 0.0, 1.0)
 
-        return pd.DataFrame({
-            "predicted_spread": predictions,
-            "confidence": confidence,
-        })
+        return pd.DataFrame(
+            {
+                "predicted_spread": predictions,
+                "confidence": confidence,
+            }
+        )
 
     def evaluate(self, X_test: pd.DataFrame, y_test: pd.Series) -> Dict[str, float]:
         """
@@ -244,17 +247,23 @@ class SpreadModel(BasePredictor):
         if self.model_variant in ["baseline", "ridge"]:
             # Linear models use coefficients
             coef = self.model.coef_
-            importance_df = pd.DataFrame({
-                "feature": self.feature_names,
-                "importance": np.abs(coef),  # Use absolute value
-            })
+            importance_df = pd.DataFrame(
+                {
+                    "feature": self.feature_names,
+                    "importance": np.abs(coef),  # Use absolute value
+                }
+            )
         elif self.model_variant in ["xgboost", "lightgbm"]:
-            importance_df = pd.DataFrame({
-                "feature": self.feature_names,
-                "importance": self.model.feature_importances_,
-            })
+            importance_df = pd.DataFrame(
+                {
+                    "feature": self.feature_names,
+                    "importance": self.model.feature_importances_,
+                }
+            )
         else:
-            raise AttributeError(f"Feature importance not available for {self.model_variant}")
+            raise AttributeError(
+                f"Feature importance not available for {self.model_variant}"
+            )
 
         # Sort and return top N
         importance_df = importance_df.sort_values("importance", ascending=False)

@@ -1,4 +1,5 @@
 """Tests for WinLossModel."""
+
 import pytest
 import pandas as pd
 import numpy as np
@@ -16,21 +17,25 @@ def sample_data():
     n_test = 20
 
     # Training data
-    X_train = pd.DataFrame({
-        "points_scored_avg": np.random.uniform(20, 35, n_train),
-        "points_allowed_avg": np.random.uniform(15, 25, n_train),
-        "yards_per_play": np.random.uniform(5.0, 7.0, n_train),
-        "turnover_diff": np.random.randint(-3, 4, n_train),
-    })
+    X_train = pd.DataFrame(
+        {
+            "points_scored_avg": np.random.uniform(20, 35, n_train),
+            "points_allowed_avg": np.random.uniform(15, 25, n_train),
+            "yards_per_play": np.random.uniform(5.0, 7.0, n_train),
+            "turnover_diff": np.random.randint(-3, 4, n_train),
+        }
+    )
     y_train = pd.Series(np.random.choice([0, 1], n_train))
 
     # Test data
-    X_test = pd.DataFrame({
-        "points_scored_avg": np.random.uniform(20, 35, n_test),
-        "points_allowed_avg": np.random.uniform(15, 25, n_test),
-        "yards_per_play": np.random.uniform(5.0, 7.0, n_test),
-        "turnover_diff": np.random.randint(-3, 4, n_test),
-    })
+    X_test = pd.DataFrame(
+        {
+            "points_scored_avg": np.random.uniform(20, 35, n_test),
+            "points_allowed_avg": np.random.uniform(15, 25, n_test),
+            "yards_per_play": np.random.uniform(5.0, 7.0, n_test),
+            "turnover_diff": np.random.randint(-3, 4, n_test),
+        }
+    )
     y_test = pd.Series(np.random.choice([0, 1], n_test))
 
     return X_train, y_train, X_test, y_test
@@ -207,10 +212,7 @@ def test_win_loss_model_custom_hyperparameters(sample_data):
     """Test using custom hyperparameters."""
     X_train, y_train, X_test, y_test = sample_data
     custom_params = {"max_iter": 500, "C": 0.5}
-    model = WinLossModel(
-        model_variant="baseline",
-        custom_hyperparameters=custom_params
-    )
+    model = WinLossModel(model_variant="baseline", custom_hyperparameters=custom_params)
 
     model.train(X_train, y_train)
 

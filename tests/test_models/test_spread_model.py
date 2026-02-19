@@ -1,4 +1,5 @@
 """Tests for SpreadModel."""
+
 import pytest
 import pandas as pd
 import numpy as np
@@ -16,21 +17,25 @@ def sample_data():
     n_test = 20
 
     # Training data
-    X_train = pd.DataFrame({
-        "points_scored_avg": np.random.uniform(20, 35, n_train),
-        "points_allowed_avg": np.random.uniform(15, 25, n_train),
-        "yards_per_play": np.random.uniform(5.0, 7.0, n_train),
-        "turnover_diff": np.random.randint(-3, 4, n_train),
-    })
+    X_train = pd.DataFrame(
+        {
+            "points_scored_avg": np.random.uniform(20, 35, n_train),
+            "points_allowed_avg": np.random.uniform(15, 25, n_train),
+            "yards_per_play": np.random.uniform(5.0, 7.0, n_train),
+            "turnover_diff": np.random.randint(-3, 4, n_train),
+        }
+    )
     y_train = pd.Series(np.random.uniform(-14, 14, n_train))  # Spread values
 
     # Test data
-    X_test = pd.DataFrame({
-        "points_scored_avg": np.random.uniform(20, 35, n_test),
-        "points_allowed_avg": np.random.uniform(15, 25, n_test),
-        "yards_per_play": np.random.uniform(5.0, 7.0, n_test),
-        "turnover_diff": np.random.randint(-3, 4, n_test),
-    })
+    X_test = pd.DataFrame(
+        {
+            "points_scored_avg": np.random.uniform(20, 35, n_test),
+            "points_allowed_avg": np.random.uniform(15, 25, n_test),
+            "yards_per_play": np.random.uniform(5.0, 7.0, n_test),
+            "turnover_diff": np.random.randint(-3, 4, n_test),
+        }
+    )
     y_test = pd.Series(np.random.uniform(-14, 14, n_test))
 
     return X_train, y_train, X_test, y_test
@@ -210,10 +215,7 @@ def test_spread_model_custom_hyperparameters(sample_data):
     """Test using custom hyperparameters."""
     X_train, y_train, X_test, y_test = sample_data
     custom_params = {"alpha": 2.0}
-    model = SpreadModel(
-        model_variant="ridge",
-        custom_hyperparameters=custom_params
-    )
+    model = SpreadModel(model_variant="ridge", custom_hyperparameters=custom_params)
 
     model.train(X_train, y_train)
 
@@ -233,6 +235,6 @@ def test_spread_model_negative_spread_means_home_favored(sample_data):
 
     # If spread is negative, home should be favored
     if spread < 0:
-        assert is_home_favored is True
+        assert is_home_favored == True  # noqa: E712 (numpy bool)
     else:
-        assert is_home_favored is False
+        assert is_home_favored == False  # noqa: E712 (numpy bool)

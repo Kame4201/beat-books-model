@@ -5,8 +5,9 @@ Defines baseline and advanced configurations for:
 - Win/Loss classification (Logistic Regression, XGBoost, LightGBM)
 - Spread regression (Linear Regression, XGBoost, LightGBM)
 """
-from typing import Any, Dict
 
+import copy
+from typing import Any, Dict
 
 # ============================================================================
 # Win/Loss Classification Configs
@@ -19,7 +20,6 @@ LOGISTIC_REGRESSION_CONFIG: Dict[str, Any] = {
         "max_iter": 1000,
         "random_state": 42,
         "solver": "lbfgs",
-        "penalty": "l2",
         "C": 1.0,  # Inverse regularization strength
     },
     "description": "Baseline logistic regression classifier for Win/Loss prediction",
@@ -37,7 +37,6 @@ XGBOOST_CLASSIFIER_CONFIG: Dict[str, Any] = {
         "random_state": 42,
         "objective": "binary:logistic",
         "eval_metric": "logloss",
-        "use_label_encoder": False,
     },
     "description": "Advanced gradient boosted classifier (XGBoost) for Win/Loss prediction",
 }
@@ -162,14 +161,14 @@ def get_config(model_type: str, config_name: str) -> Dict[str, Any]:
                 f"Invalid config_name '{config_name}' for win_loss. "
                 f"Valid options: {list(WIN_LOSS_CONFIGS.keys())}"
             )
-        return WIN_LOSS_CONFIGS[config_name]
+        return copy.deepcopy(WIN_LOSS_CONFIGS[config_name])
     elif model_type == "spread":
         if config_name not in SPREAD_CONFIGS:
             raise ValueError(
                 f"Invalid config_name '{config_name}' for spread. "
                 f"Valid options: {list(SPREAD_CONFIGS.keys())}"
             )
-        return SPREAD_CONFIGS[config_name]
+        return copy.deepcopy(SPREAD_CONFIGS[config_name])
     else:
         raise ValueError(
             f"Invalid model_type '{model_type}'. Valid options: 'win_loss', 'spread'"

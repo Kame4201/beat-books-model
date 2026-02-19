@@ -1,4 +1,5 @@
 """Tests for ModelRegistry."""
+
 import pytest
 import tempfile
 from pathlib import Path

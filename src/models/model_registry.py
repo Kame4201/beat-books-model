@@ -9,8 +9,9 @@ Stores:
 
 Registry is stored as JSON file in model_artifacts/ directory.
 """
+
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import uuid
@@ -101,7 +102,7 @@ class ModelRegistry:
             ... )
         """
         model_id = str(uuid.uuid4())
-        train_date = datetime.utcnow().isoformat()
+        train_date = datetime.now(timezone.utc).isoformat()
 
         model_entry = {
             "model_id": model_id,
@@ -197,9 +198,7 @@ class ModelRegistry:
             return None
 
         # Filter models that have the requested metric
-        models_with_metric = [
-            m for m in models if metric_name in m.get("metrics", {})
-        ]
+        models_with_metric = [m for m in models if metric_name in m.get("metrics", {})]
         if not models_with_metric:
             return None
 
@@ -275,7 +274,9 @@ class ModelRegistry:
             lines.append(f"Name: {model['model_name']}")
             lines.append(f"Version: {model['version']}")
             lines.append(f"Trained: {model['train_date']}")
-            lines.append(f"Train Seasons: {model['train_seasons'][0]}-{model['train_seasons'][-1]}")
+            lines.append(
+                f"Train Seasons: {model['train_seasons'][0]}-{model['train_seasons'][-1]}"
+            )
             lines.append(f"Test Seasons: {model['test_seasons']}")
             lines.append("Metrics:")
             for metric_name, metric_value in model["metrics"].items():

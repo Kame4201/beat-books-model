@@ -1,4 +1,5 @@
 """Tests for BasePredictor abstract base class."""
+
 import pytest
 import pandas as pd
 import numpy as np
@@ -45,10 +46,12 @@ def test_base_predictor_initialization():
 def test_base_predictor_train():
     """Test training stores metadata correctly."""
     predictor = ConcretePredictor()
-    X_train = pd.DataFrame({
-        "feature1": [1, 2, 3],
-        "feature2": [4, 5, 6],
-    })
+    X_train = pd.DataFrame(
+        {
+            "feature1": [1, 2, 3],
+            "feature2": [4, 5, 6],
+        }
+    )
     y_train = pd.Series([0, 1, 0])
 
     predictor.train(X_train, y_train)
@@ -62,18 +65,22 @@ def test_base_predictor_train():
 def test_base_predictor_validate_features():
     """Test feature validation."""
     predictor = ConcretePredictor()
-    X_train = pd.DataFrame({
-        "feature1": [1, 2, 3],
-        "feature2": [4, 5, 6],
-    })
+    X_train = pd.DataFrame(
+        {
+            "feature1": [1, 2, 3],
+            "feature2": [4, 5, 6],
+        }
+    )
     y_train = pd.Series([0, 1, 0])
     predictor.train(X_train, y_train)
 
     # Valid features
-    X_test = pd.DataFrame({
-        "feature1": [7, 8],
-        "feature2": [9, 10],
-    })
+    X_test = pd.DataFrame(
+        {
+            "feature1": [7, 8],
+            "feature2": [9, 10],
+        }
+    )
     predictor.predict(X_test)  # Should not raise
 
     # Missing feature
@@ -85,10 +92,12 @@ def test_base_predictor_validate_features():
 def test_base_predictor_save_load():
     """Test model serialization."""
     predictor = ConcretePredictor()
-    X_train = pd.DataFrame({
-        "feature1": [1, 2, 3],
-        "feature2": [4, 5, 6],
-    })
+    X_train = pd.DataFrame(
+        {
+            "feature1": [1, 2, 3],
+            "feature2": [4, 5, 6],
+        }
+    )
     y_train = pd.Series([0, 1, 0])
     predictor.train(X_train, y_train)
 
