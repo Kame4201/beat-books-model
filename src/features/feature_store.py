@@ -3,6 +3,7 @@ Feature store for saving and loading computed features.
 
 Supports versioning and metadata tracking to ensure reproducibility.
 """
+
 import pandas as pd
 import json
 from pathlib import Path
@@ -35,7 +36,7 @@ class FeatureStore:
         features_df: pd.DataFrame,
         version: str = FEATURE_VERSION,
         description: str = "",
-        additional_info: Optional[Dict[str, Any]] = None
+        additional_info: Optional[Dict[str, Any]] = None,
     ) -> Path:
         """
         Save features with metadata.
@@ -53,8 +54,8 @@ class FeatureStore:
         version_dir = self.base_path / version
         version_dir.mkdir(parents=True, exist_ok=True)
 
-        # Generate timestamped filename
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # Generate timestamped filename (microseconds to avoid collisions)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         feature_file = version_dir / f"features_{timestamp}.parquet"
         metadata_file = version_dir / f"metadata_{timestamp}.json"
 
@@ -63,7 +64,7 @@ class FeatureStore:
         if "season" in features_df.columns:
             season_range = (
                 int(features_df["season"].min()),
-                int(features_df["season"].max())
+                int(features_df["season"].max()),
             )
 
         # Create metadata
@@ -74,7 +75,7 @@ class FeatureStore:
             row_count=len(features_df),
             season_range=season_range,
             description=description,
-            additional_info=additional_info or {}
+            additional_info=additional_info or {},
         )
 
         # Save features as parquet (efficient columnar format)
@@ -91,9 +92,7 @@ class FeatureStore:
         return feature_file
 
     def load(
-        self,
-        version: str = FEATURE_VERSION,
-        timestamp: Optional[str] = None
+        self, version: str = FEATURE_VERSION, timestamp: Optional[str] = None
     ) -> tuple[pd.DataFrame, FeatureMetadata]:
         """
         Load features and metadata.
@@ -141,7 +140,9 @@ class FeatureStore:
             metadata_dict = json.load(f)
             metadata = FeatureMetadata.from_dict(metadata_dict)
 
-        print(f"Loaded {len(features_df)} rows with {len(features_df.columns)} features")
+        print(
+            f"Loaded {len(features_df)} rows with {len(features_df.columns)} features"
+        )
         print(f"  Version: {metadata.version}")
         print(f"  Created: {metadata.creation_date}")
         print(f"  Season range: {metadata.season_range}")
@@ -182,9 +183,7 @@ class FeatureStore:
         return timestamps
 
     def get_metadata(
-        self,
-        version: str = FEATURE_VERSION,
-        timestamp: Optional[str] = None
+        self, version: str = FEATURE_VERSION, timestamp: Optional[str] = None
     ) -> FeatureMetadata:
         """
         Load only metadata without loading full feature DataFrame.

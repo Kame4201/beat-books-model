@@ -4,13 +4,12 @@ Core feature engineering logic for NFL game predictions.
 CRITICAL: All features use ONLY historical data (no look-ahead bias).
 Rolling windows compute over games BEFORE the current game.
 """
+
 import pandas as pd
 import numpy as np
-from typing import List, Optional, Dict
-from datetime import datetime, timedelta
+from typing import List, Optional
 
-from src.core.db_reader import get_read_session
-from src.features.feature_config import ROLLING_WINDOWS, get_all_feature_names
+from src.features.feature_config import ROLLING_WINDOWS
 
 
 class FeatureEngineer:
@@ -30,9 +29,7 @@ class FeatureEngineer:
         self.rolling_windows = rolling_windows or ROLLING_WINDOWS
 
     def compute_features(
-        self,
-        season: int,
-        weeks: Optional[List[int]] = None
+        self, season: int, weeks: Optional[List[int]] = None
     ) -> pd.DataFrame:
         """
         Compute features for a season.
@@ -68,9 +65,7 @@ class FeatureEngineer:
         return all_features
 
     def _load_game_data(
-        self,
-        season: int,
-        weeks: Optional[List[int]] = None
+        self, season: int, weeks: Optional[List[int]] = None
     ) -> pd.DataFrame:
         """
         Load game data from database.
@@ -135,9 +130,7 @@ class FeatureEngineer:
         return features
 
     def _add_rolling_averages(
-        self,
-        features: pd.DataFrame,
-        team_games: pd.DataFrame
+        self, features: pd.DataFrame, team_games: pd.DataFrame
     ) -> pd.DataFrame:
         """
         Add rolling average features.
@@ -189,9 +182,7 @@ class FeatureEngineer:
         return features
 
     def _add_efficiency_metrics(
-        self,
-        features: pd.DataFrame,
-        team_games: pd.DataFrame
+        self, features: pd.DataFrame, team_games: pd.DataFrame
     ) -> pd.DataFrame:
         """
         Add efficiency metric features (points/yards per drive, red zone, third down).
@@ -280,9 +271,7 @@ class FeatureEngineer:
         return features
 
     def _add_situational_features(
-        self,
-        features: pd.DataFrame,
-        team_games: pd.DataFrame
+        self, features: pd.DataFrame, team_games: pd.DataFrame
     ) -> pd.DataFrame:
         """
         Add situational features (home/away, rest, schedule strength, streaks).
@@ -304,12 +293,12 @@ class FeatureEngineer:
         )
 
         # Rest days (days since last game)
-        features["rest_days"] = (
-            team_games["game_date"].diff().dt.days.fillna(7)
-        )
+        features["rest_days"] = team_games["game_date"].diff().dt.days.fillna(7)
 
         # Strength of schedule (opponent win pct, season-to-date)
-        features["strength_of_schedule"] = self._compute_strength_of_schedule(team_games)
+        features["strength_of_schedule"] = self._compute_strength_of_schedule(
+            team_games
+        )
 
         # Current win/loss streak
         features["current_streak"] = self._compute_streak(team_games)
@@ -323,9 +312,7 @@ class FeatureEngineer:
         return features
 
     def _add_derived_features(
-        self,
-        features: pd.DataFrame,
-        team_games: pd.DataFrame
+        self, features: pd.DataFrame, team_games: pd.DataFrame
     ) -> pd.DataFrame:
         """
         Add derived/trend features.
@@ -358,10 +345,7 @@ class FeatureEngineer:
 
     @staticmethod
     def _compute_expanding_mean(
-        df: pd.DataFrame,
-        condition_col: str,
-        value_col: str,
-        shift: int = 0
+        df: pd.DataFrame, condition_col: str, value_col: str, shift: int = 0
     ) -> pd.Series:
         """
         Compute expanding mean for rows matching a condition.
@@ -426,12 +410,12 @@ class FeatureEngineer:
         for i in range(1, len(df)):
             if pd.isna(won.iloc[i]):
                 streak.iloc[i] = 0
-            elif won.iloc[i] == won.iloc[i-1]:
+            elif won.iloc[i] == won.iloc[i - 1]:
                 # Continue streak
                 if won.iloc[i] == 1:
-                    streak.iloc[i] = max(1, streak.iloc[i-1] + 1)
+                    streak.iloc[i] = max(1, streak.iloc[i - 1] + 1)
                 else:
-                    streak.iloc[i] = min(-1, streak.iloc[i-1] - 1)
+                    streak.iloc[i] = min(-1, streak.iloc[i - 1] - 1)
             else:
                 # Streak broken
                 if won.iloc[i] == 1:

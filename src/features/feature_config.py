@@ -3,10 +3,10 @@ Feature configuration and metadata for the NFL prediction system.
 
 Defines all feature names, versions, rolling windows, and metadata.
 """
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Dict, Any
-
 
 # Feature version for tracking changes over time
 FEATURE_VERSION = "v1.0"
@@ -43,6 +43,8 @@ class FeatureMetadata:
     def from_dict(cls, data: Dict[str, Any]) -> "FeatureMetadata":
         """Create metadata from dictionary."""
         data["creation_date"] = datetime.fromisoformat(data["creation_date"])
+        if "season_range" in data and isinstance(data["season_range"], list):
+            data["season_range"] = tuple(data["season_range"])
         return cls(**data)
 
 
@@ -51,28 +53,22 @@ ROLLING_FEATURE_TEMPLATES = {
     # Points
     "points_scored_avg_{window}": "Average points scored over last {window} games",
     "points_allowed_avg_{window}": "Average points allowed over last {window} games",
-
     # Yards per play
     "off_yards_per_play_avg_{window}": "Offensive yards per play over last {window} games",
     "def_yards_per_play_avg_{window}": "Defensive yards per play allowed over last {window} games",
-
     # Turnover differential
     "turnover_diff_avg_{window}": "Turnover differential over last {window} games",
-
     # Efficiency metrics
     "off_points_per_drive_avg_{window}": "Offensive points per drive over last {window} games",
     "def_points_per_drive_avg_{window}": "Defensive points per drive allowed over last {window} games",
     "off_yards_per_drive_avg_{window}": "Offensive yards per drive over last {window} games",
     "def_yards_per_drive_avg_{window}": "Defensive yards per drive allowed over last {window} games",
-
     # Red zone efficiency
     "off_red_zone_pct_avg_{window}": "Offensive red zone TD percentage over last {window} games",
     "def_red_zone_pct_avg_{window}": "Defensive red zone TD percentage allowed over last {window} games",
-
     # Third down efficiency
     "off_third_down_pct_avg_{window}": "Offensive third down conversion rate over last {window} games",
     "def_third_down_pct_avg_{window}": "Defensive third down conversion rate allowed over last {window} games",
-
     # Sack rate
     "sacks_given_avg_{window}": "Sacks given up per game over last {window} games",
     "sacks_taken_avg_{window}": "Sacks recorded per game over last {window} games",

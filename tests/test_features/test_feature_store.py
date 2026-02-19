@@ -1,4 +1,5 @@
 """Tests for feature store (save/load features)."""
+
 import pytest
 import pandas as pd
 import numpy as np
@@ -26,22 +27,22 @@ def temp_feature_store():
 def sample_features_df():
     """Create sample features DataFrame."""
     np.random.seed(42)
-    return pd.DataFrame({
-        "team": ["KC"] * 10,
-        "season": [2024] * 10,
-        "week": list(range(1, 11)),
-        "points_scored_avg_3": np.random.uniform(20, 30, 10),
-        "points_allowed_avg_3": np.random.uniform(15, 25, 10),
-        "home_win_pct": np.random.uniform(0.4, 0.6, 10),
-    })
+    return pd.DataFrame(
+        {
+            "team": ["KC"] * 10,
+            "season": [2024] * 10,
+            "week": list(range(1, 11)),
+            "points_scored_avg_3": np.random.uniform(20, 30, 10),
+            "points_allowed_avg_3": np.random.uniform(15, 25, 10),
+            "home_win_pct": np.random.uniform(0.4, 0.6, 10),
+        }
+    )
 
 
 def test_save_features(temp_feature_store, sample_features_df):
     """Test saving features to store."""
     feature_file = temp_feature_store.save(
-        sample_features_df,
-        version="v1.0",
-        description="Test features"
+        sample_features_df, version="v1.0", description="Test features"
     )
 
     # Check that files were created
@@ -49,7 +50,9 @@ def test_save_features(temp_feature_store, sample_features_df):
     assert feature_file.suffix == ".parquet"
 
     # Check metadata file
-    metadata_file = feature_file.parent / feature_file.name.replace("features_", "metadata_").replace(".parquet", ".json")
+    metadata_file = feature_file.parent / feature_file.name.replace(
+        "features_", "metadata_"
+    ).replace(".parquet", ".json")
     assert metadata_file.exists()
 
 
@@ -57,9 +60,7 @@ def test_load_features(temp_feature_store, sample_features_df):
     """Test loading features from store."""
     # Save features first
     temp_feature_store.save(
-        sample_features_df,
-        version="v1.0",
-        description="Test features"
+        sample_features_df, version="v1.0", description="Test features"
     )
 
     # Load features
@@ -107,7 +108,7 @@ def test_get_metadata_only(temp_feature_store, sample_features_df):
         sample_features_df,
         version="v1.0",
         description="Test features",
-        additional_info={"test": "value"}
+        additional_info={"test": "value"},
     )
 
     # Load metadata only (should be fast)

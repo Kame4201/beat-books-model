@@ -3,20 +3,21 @@ Validation functions to ensure no look-ahead bias in features.
 
 CRITICAL: All features must only use data from BEFORE the prediction date.
 """
+
 import pandas as pd
 from typing import List, Optional
-from datetime import datetime
 
 
 class LookAheadBiasError(Exception):
     """Raised when look-ahead bias is detected in features."""
+
     pass
 
 
 def validate_no_future_data(
     features_df: pd.DataFrame,
     game_dates: pd.Series,
-    reference_date_col: str = "game_date"
+    reference_date_col: str = "game_date",
 ) -> None:
     """
     Validate that features only use data from before the game date.
@@ -35,26 +36,24 @@ def validate_no_future_data(
     if len(features_df) != len(game_dates):
         raise ValueError("features_df and game_dates must have same length")
 
-    # Check for NaN values in early rows (expected for rolling features)
-    # But after the rolling window, should have values
+    # Check rolling features: early rows should be NaN (warmup), not filled
     for col in features_df.columns:
         if "_avg_" in col:
-            # Extract window size from column name (e.g., "points_scored_avg_3" -> 3)
             try:
-                window_size = int(col.split("_")[-1])
-                # After window_size games, should have valid data
-                if features_df[col].iloc[window_size:].isna().any():
-                    # Some NaN is ok if team hasn't played enough games
-                    # But if we have enough historical data, shouldn't be NaN
-                    pass
+                int(col.split("_")[-1])  # Verify it's a rolling feature
             except (ValueError, IndexError):
-                # Column name doesn't follow expected pattern, skip
                 continue
+
+            # With shift(1), the first row must always be NaN
+            if len(features_df) > 0 and not pd.isna(features_df[col].iloc[0]):
+                raise LookAheadBiasError(
+                    f"Feature '{col}' has a value at row 0 but should be NaN "
+                    f"(shift(1) means no prior data is available for the first game)."
+                )
 
 
 def validate_rolling_window_integrity(
-    features_df: pd.DataFrame,
-    required_windows: List[int] = [3, 5, 10]
+    features_df: pd.DataFrame, required_windows: List[int] = [3, 5, 10]
 ) -> None:
     """
     Validate that rolling window features maintain proper ordering.
@@ -104,9 +103,7 @@ def validate_rolling_window_integrity(
 
 
 def validate_chronological_order(
-    df: pd.DataFrame,
-    date_col: str = "game_date",
-    team_col: str = "team"
+    df: pd.DataFrame, date_col: str = "game_date", team_col: str = "team"
 ) -> None:
     """
     Validate that data is in chronological order by team.
@@ -140,8 +137,7 @@ def validate_chronological_order(
 
 
 def validate_feature_completeness(
-    features_df: pd.DataFrame,
-    min_features: int = 20
+    features_df: pd.DataFrame, min_features: int = 20
 ) -> None:
     """
     Validate that minimum number of features are present.
@@ -165,9 +161,7 @@ def validate_feature_completeness(
 
 
 def validate_no_nulls_after_warmup(
-    features_df: pd.DataFrame,
-    max_window: int = 10,
-    allowed_null_rate: float = 0.1
+    features_df: pd.DataFrame, max_window: int = 10, allowed_null_rate: float = 0.1
 ) -> None:
     """
     Validate that after warmup period, there aren't excessive nulls.
@@ -206,7 +200,7 @@ def validate_no_nulls_after_warmup(
 def run_all_validations(
     features_df: pd.DataFrame,
     game_dates: Optional[pd.Series] = None,
-    min_features: int = 20
+    min_features: int = 20,
 ) -> None:
     """
     Run all validation checks on computed features.

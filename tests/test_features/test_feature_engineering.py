@@ -1,4 +1,5 @@
 """Tests for feature engineering computation logic."""
+
 import pytest
 import pandas as pd
 import numpy as np
@@ -14,41 +15,40 @@ def sample_team_games():
     n_games = 15
 
     base_date = datetime(2024, 9, 1)
-    dates = [base_date + timedelta(days=7*i) for i in range(n_games)]
+    dates = [base_date + timedelta(days=7 * i) for i in range(n_games)]
 
-    return pd.DataFrame({
-        "game_id": list(range(1, n_games + 1)),
-        "team": ["KC"] * n_games,
-        "season": [2024] * n_games,
-        "week": list(range(1, n_games + 1)),
-        "game_date": dates,
-
-        # Basic stats
-        "points_scored": np.random.randint(14, 42, n_games),
-        "points_allowed": np.random.randint(10, 35, n_games),
-        "off_yards_per_play": np.random.uniform(4.5, 7.0, n_games),
-        "def_yards_per_play": np.random.uniform(4.0, 6.5, n_games),
-        "turnover_diff": np.random.randint(-3, 4, n_games),
-
-        # Efficiency metrics
-        "off_points_per_drive": np.random.uniform(1.5, 3.5, n_games),
-        "def_points_per_drive": np.random.uniform(1.0, 3.0, n_games),
-        "off_yards_per_drive": np.random.uniform(25, 45, n_games),
-        "def_yards_per_drive": np.random.uniform(20, 40, n_games),
-        "off_red_zone_pct": np.random.uniform(0.45, 0.75, n_games),
-        "def_red_zone_pct": np.random.uniform(0.40, 0.70, n_games),
-        "off_third_down_pct": np.random.uniform(0.30, 0.50, n_games),
-        "def_third_down_pct": np.random.uniform(0.25, 0.45, n_games),
-        "sacks_given": np.random.randint(0, 6, n_games),
-        "sacks_taken": np.random.randint(0, 5, n_games),
-
-        # Situational
-        "is_home": [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-        "is_away": [0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-        "won": [1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1],
-        "point_diff": None,  # Will compute
-        "is_division_game": [0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1],
-    })
+    return pd.DataFrame(
+        {
+            "game_id": list(range(1, n_games + 1)),
+            "team": ["KC"] * n_games,
+            "season": [2024] * n_games,
+            "week": list(range(1, n_games + 1)),
+            "game_date": dates,
+            # Basic stats
+            "points_scored": np.random.randint(14, 42, n_games),
+            "points_allowed": np.random.randint(10, 35, n_games),
+            "off_yards_per_play": np.random.uniform(4.5, 7.0, n_games),
+            "def_yards_per_play": np.random.uniform(4.0, 6.5, n_games),
+            "turnover_diff": np.random.randint(-3, 4, n_games),
+            # Efficiency metrics
+            "off_points_per_drive": np.random.uniform(1.5, 3.5, n_games),
+            "def_points_per_drive": np.random.uniform(1.0, 3.0, n_games),
+            "off_yards_per_drive": np.random.uniform(25, 45, n_games),
+            "def_yards_per_drive": np.random.uniform(20, 40, n_games),
+            "off_red_zone_pct": np.random.uniform(0.45, 0.75, n_games),
+            "def_red_zone_pct": np.random.uniform(0.40, 0.70, n_games),
+            "off_third_down_pct": np.random.uniform(0.30, 0.50, n_games),
+            "def_third_down_pct": np.random.uniform(0.25, 0.45, n_games),
+            "sacks_given": np.random.randint(0, 6, n_games),
+            "sacks_taken": np.random.randint(0, 5, n_games),
+            # Situational
+            "is_home": [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+            "is_away": [0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+            "won": [1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1],
+            "point_diff": None,  # Will compute
+            "is_division_game": [0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1],
+        }
+    )
 
 
 def test_feature_engineer_initialization():
@@ -82,8 +82,8 @@ def test_rolling_averages_no_lookahead(sample_team_games):
     assert not pd.isna(features["points_scored_avg_3"].iloc[1])  # Has 1 prior game
 
     # Verify that feature for game N only uses games 1 through N-1
-    # Game 4's rolling avg should be mean of games 1, 2, 3
-    expected_avg = sample_team_games["points_scored"].iloc[1:4].mean()
+    # Game 4 (index 3): shift(1) gives games 0,1,2 values; rolling(3) = mean of all 3
+    expected_avg = sample_team_games["points_scored"].iloc[0:3].mean()
     actual_avg = features["points_scored_avg_3"].iloc[3]
 
     assert abs(actual_avg - expected_avg) < 0.01
@@ -148,20 +148,21 @@ def test_streak_computation(sample_team_games):
     """Test win/loss streak computation."""
     engineer = FeatureEngineer()
 
+    # Take first 7 games, then override columns
+    df = sample_team_games.head(7).copy()
+
     # Create known win pattern: W, W, L, W, W, W, L
-    sample_team_games["won"] = [1, 1, 0, 1, 1, 1, 0]
-    sample_team_games["point_diff"] = [10, 5, -3, 7, 14, 3, -10]
+    df["won"] = [1, 1, 0, 1, 1, 1, 0]
+    df["point_diff"] = [10, 5, -3, 7, 14, 3, -10]
 
-    features = engineer._compute_team_features(sample_team_games.head(7))
+    features = engineer._compute_team_features(df)
 
-    # Check streak values
-    # Game 1: no prior games, streak = 0
-    # Game 2: prior win, streak = 1
-    # Game 3: prior win, streak = 2
-    # Game 4: prior loss, streak = -1
-    # Game 5: prior win, streak = 1
-    # Game 6: prior win, streak = 2
-    # Game 7: prior win, streak = 3
+    # Check streak values (uses shift(1), so streak reflects PRIOR games):
+    # Game 1: no prior games (NaN after shift), streak = 0
+    # Game 2: prior game was W, streak = 1
+    # Game 3: prior game was W (continuing), streak = 2
+    # Game 4: prior game was L (streak broken), streak = -1
+    # Game 5: prior game was W (new streak), streak = 1
 
     assert features["current_streak"].iloc[0] == 0
     assert features["current_streak"].iloc[1] == 1
@@ -200,23 +201,25 @@ def test_bye_week_detection():
         datetime(2024, 10, 13),
     ]
 
-    df = pd.DataFrame({
-        "game_id": [1, 2, 3, 4, 5],
-        "team": ["KC"] * 5,
-        "season": [2024] * 5,
-        "week": [1, 2, 3, 5, 6],
-        "game_date": dates,
-        "points_scored": [28, 24, 31, 27, 35],
-        "points_allowed": [21, 20, 17, 24, 28],
-        "point_diff": [7, 4, 14, 3, 7],
-        "off_yards_per_play": [6.5] * 5,
-        "def_yards_per_play": [5.0] * 5,
-        "turnover_diff": [1] * 5,
-        "is_home": [1, 0, 1, 0, 1],
-        "is_away": [0, 1, 0, 1, 0],
-        "won": [1, 1, 1, 1, 1],
-        "is_division_game": [0] * 5,
-    })
+    df = pd.DataFrame(
+        {
+            "game_id": [1, 2, 3, 4, 5],
+            "team": ["KC"] * 5,
+            "season": [2024] * 5,
+            "week": [1, 2, 3, 5, 6],
+            "game_date": dates,
+            "points_scored": [28, 24, 31, 27, 35],
+            "points_allowed": [21, 20, 17, 24, 28],
+            "point_diff": [7, 4, 14, 3, 7],
+            "off_yards_per_play": [6.5] * 5,
+            "def_yards_per_play": [5.0] * 5,
+            "turnover_diff": [1] * 5,
+            "is_home": [1, 0, 1, 0, 1],
+            "is_away": [0, 1, 0, 1, 0],
+            "won": [1, 1, 1, 1, 1],
+            "is_division_game": [0] * 5,
+        }
+    )
 
     features = engineer._compute_team_features(df)
 
@@ -234,7 +237,23 @@ def test_trend_computation(sample_team_games):
     engineer = FeatureEngineer()
 
     # Create point differential with clear upward trend
-    sample_team_games["point_diff"] = [5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35, 38, 41, 44, 47]
+    sample_team_games["point_diff"] = [
+        5,
+        8,
+        11,
+        14,
+        17,
+        20,
+        23,
+        26,
+        29,
+        32,
+        35,
+        38,
+        41,
+        44,
+        47,
+    ]
 
     features = engineer._compute_team_features(sample_team_games)
 
@@ -260,29 +279,49 @@ def test_multiple_teams():
     """Test that features are computed separately for each team."""
     engineer = FeatureEngineer(rolling_windows=[3])
 
-    # Create data for two teams
-    team1_games = pd.DataFrame({
-        "game_id": [1, 2, 3, 4, 5],
-        "team": ["KC"] * 5,
-        "season": [2024] * 5,
-        "week": [1, 2, 3, 4, 5],
-        "game_date": pd.date_range("2024-09-01", periods=5, freq="7D"),
-        "points_scored": [28, 24, 31, 27, 35],
-        "points_allowed": [21, 20, 17, 24, 28],
-    })
+    common_cols = {
+        "off_yards_per_play": [6.0] * 5,
+        "def_yards_per_play": [5.0] * 5,
+        "turnover_diff": [1, 0, -1, 2, 0],
+        "is_home": [1, 0, 1, 0, 1],
+        "is_away": [0, 1, 0, 1, 0],
+        "won": [1, 1, 0, 1, 1],
+        "is_division_game": [0, 1, 0, 0, 1],
+    }
 
-    team2_games = pd.DataFrame({
-        "game_id": [6, 7, 8, 9, 10],
-        "team": ["BUF"] * 5,
-        "season": [2024] * 5,
-        "week": [1, 2, 3, 4, 5],
-        "game_date": pd.date_range("2024-09-01", periods=5, freq="7D"),
-        "points_scored": [21, 17, 24, 20, 28],
-        "points_allowed": [14, 10, 20, 17, 24],
-    })
+    team1_games = pd.DataFrame(
+        {
+            "game_id": [1, 2, 3, 4, 5],
+            "team": ["KC"] * 5,
+            "season": [2024] * 5,
+            "week": [1, 2, 3, 4, 5],
+            "game_date": pd.date_range("2024-09-01", periods=5, freq="7D"),
+            "points_scored": [28, 24, 31, 27, 35],
+            "points_allowed": [21, 20, 17, 24, 28],
+            **common_cols,
+        }
+    )
+    team1_games["point_diff"] = (
+        team1_games["points_scored"] - team1_games["points_allowed"]
+    )
+
+    team2_games = pd.DataFrame(
+        {
+            "game_id": [6, 7, 8, 9, 10],
+            "team": ["BUF"] * 5,
+            "season": [2024] * 5,
+            "week": [1, 2, 3, 4, 5],
+            "game_date": pd.date_range("2024-09-01", periods=5, freq="7D"),
+            "points_scored": [21, 17, 24, 20, 28],
+            "points_allowed": [14, 10, 20, 17, 24],
+            **common_cols,
+        }
+    )
+    team2_games["point_diff"] = (
+        team2_games["points_scored"] - team2_games["points_allowed"]
+    )
 
     # Features should be computed independently
-    # KC's first game rolling avg should not include BUF data
     features_kc = engineer._compute_team_features(team1_games)
     features_buf = engineer._compute_team_features(team2_games)
 

@@ -1,4 +1,5 @@
 """Tests for feature configuration and metadata."""
+
 import pytest
 from datetime import datetime
 
@@ -71,7 +72,7 @@ def test_feature_metadata():
         feature_names=["feature1", "feature2"],
         row_count=100,
         season_range=(2020, 2024),
-        description="Test features"
+        description="Test features",
     )
 
     # Test to_dict
