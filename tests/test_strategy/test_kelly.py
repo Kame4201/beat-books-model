@@ -3,6 +3,7 @@ Unit tests for Kelly Criterion calculator.
 
 Tests include hand-verified expected values for correctness.
 """
+
 import pytest
 from src.strategy.kelly import (
     KellyCriterion,
@@ -94,30 +95,30 @@ class TestKellyFormula:
 
         Hand calculation:
         - Model prob (p): 60%
-        - Market odds: -110 (decimal 1.909, b = 0.909)
+        - Market odds: -110 (decimal = 100/110 + 1 = 1.90909..., b = 100/110 = 0.90909...)
         - q = 1 - 0.6 = 0.4
-        - Full Kelly: (0.909 * 0.6 - 0.4) / 0.909 = 0.1587
-        - Half Kelly: 0.1587 / 2 = 0.0794
+        - Full Kelly: (b*p - q) / b = (0.90909*0.6 - 0.4) / 0.90909 = 0.16
+        - Half Kelly: 0.16 / 2 = 0.08
         """
         kelly = calculate_kelly(
             model_prob=0.60, american_odds=-110, kelly_fraction=0.5, min_edge=0.01
         )
-        assert round(kelly, 4) == 0.0794
+        assert round(kelly, 4) == 0.08
 
     def test_kelly_full_variant(self):
         """Test full Kelly (no fraction)."""
-        # Same as above but full Kelly
+        # Same as above but full Kelly = 0.16
         kelly = calculate_kelly(
             model_prob=0.60, american_odds=-110, kelly_fraction=1.0, min_edge=0.01
         )
-        assert round(kelly, 4) == 0.1587
+        assert round(kelly, 4) == 0.16
 
     def test_kelly_quarter_variant(self):
         """Test quarter Kelly (conservative)."""
         kelly = calculate_kelly(
             model_prob=0.60, american_odds=-110, kelly_fraction=0.25, min_edge=0.01
         )
-        assert round(kelly, 4) == 0.0397
+        assert round(kelly, 4) == 0.04
 
     def test_kelly_no_edge(self):
         """Test that Kelly returns 0 when edge is below minimum."""
@@ -325,15 +326,15 @@ class TestAcceptanceCriteria:
 
         Known case:
         - Model: 60% win probability
-        - Odds: -110 (decimal 1.909)
-        - Expected full Kelly: (0.909 * 0.6 - 0.4) / 0.909 = 15.87%
-        - Expected half Kelly: 7.94%
+        - Odds: -110 (decimal 1.90909..., b = 100/110 = 0.90909...)
+        - Full Kelly: (b*p - q) / b = (0.90909*0.6 - 0.4) / 0.90909 = 0.16
+        - Half Kelly: 0.08
         """
         kelly_full = calculate_kelly(0.60, -110, kelly_fraction=1.0, min_edge=0.0)
         kelly_half = calculate_kelly(0.60, -110, kelly_fraction=0.5, min_edge=0.0)
 
-        assert round(kelly_full, 4) == 0.1587
-        assert round(kelly_half, 4) == 0.0794
+        assert round(kelly_full, 4) == 0.16
+        assert round(kelly_half, 4) == 0.08
 
     def test_negative_edge_returns_zero(self):
         """Verify negative edge always returns bet size of 0."""
@@ -351,9 +352,9 @@ class TestAcceptanceCriteria:
     def test_fractional_kelly_variants(self):
         """Verify fractional Kelly variants work correctly."""
         test_cases = [
-            (1.0, 0.1587),  # Full Kelly
-            (0.5, 0.0794),  # Half Kelly
-            (0.25, 0.0397),  # Quarter Kelly
+            (1.0, 0.16),  # Full Kelly
+            (0.5, 0.08),  # Half Kelly
+            (0.25, 0.04),  # Quarter Kelly
         ]
 
         for fraction, expected in test_cases:

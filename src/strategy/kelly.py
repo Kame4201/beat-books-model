@@ -10,8 +10,8 @@ where:
 - p = probability of winning (model's predicted probability)
 - q = probability of losing (1 - p)
 """
+
 from enum import Enum
-from typing import Optional
 
 
 class KellyFraction(Enum):

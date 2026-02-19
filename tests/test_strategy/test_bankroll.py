@@ -3,6 +3,7 @@ Unit tests for bankroll management.
 
 Tests include validation of all bankroll management rules.
 """
+
 import pytest
 from datetime import date, timedelta
 from src.strategy.bankroll import BankrollManager
@@ -50,9 +51,7 @@ class TestBankrollManagerInitialization:
 
         # min > max
         with pytest.raises(ValueError, match="min_bet_pct must be between"):
-            BankrollManager(
-                starting_bankroll=10000, min_bet_pct=0.1, max_bet_pct=0.05
-            )
+            BankrollManager(starting_bankroll=10000, min_bet_pct=0.1, max_bet_pct=0.05)
 
     def test_invalid_stop_loss_pct(self):
         """Test that invalid stop_loss_pct raises error."""
@@ -304,7 +303,9 @@ class TestBankrollStats:
 
     def test_initial_stats(self):
         """Test stats at initialization."""
-        bm = BankrollManager(starting_bankroll=10000, max_bet_pct=0.05, min_bet_pct=0.01)
+        bm = BankrollManager(
+            starting_bankroll=10000, max_bet_pct=0.05, min_bet_pct=0.01
+        )
         stats = bm.get_stats()
 
         assert stats["starting_bankroll"] == 10000
@@ -360,7 +361,8 @@ class TestReset:
     def test_reset_clears_stop_loss(self):
         """Test that reset clears stop-loss state."""
         bm = BankrollManager(starting_bankroll=10000, stop_loss_pct=0.50)
-        bm.current_bankroll = 4000  # Trigger stop-loss
+        bm.current_bankroll = 4000
+        bm.check_stop_loss()  # Explicitly trigger stop-loss check
         assert bm.is_stopped
 
         bm.reset()

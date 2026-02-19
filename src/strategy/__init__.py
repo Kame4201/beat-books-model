@@ -1,4 +1,5 @@
 """Strategy module for bet sizing and bankroll management."""
+
 from .kelly import (
     KellyCriterion,
     KellyFraction,

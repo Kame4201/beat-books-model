@@ -6,7 +6,8 @@ Implements safeguards to protect bankroll from ruin:
 - Stop-loss rules
 - Daily exposure limits
 """
-from datetime import date, datetime
+
+from datetime import date
 from typing import Optional
 
 
@@ -173,7 +174,10 @@ class BankrollManager:
 
         # Stop-loss check
         if self.check_stop_loss():
-            return False, f"Stop-loss triggered: bankroll ${self.current_bankroll:.2f} < ${self.stop_loss_threshold:.2f}"
+            return (
+                False,
+                f"Stop-loss triggered: bankroll ${self.current_bankroll:.2f} < ${self.stop_loss_threshold:.2f}",
+            )
 
         current_exposure = self.get_daily_exposure(bet_date)
         max_daily_exposure = self.daily_exposure_pct * self.current_bankroll
