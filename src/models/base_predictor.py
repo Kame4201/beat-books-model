@@ -36,7 +36,7 @@ class BasePredictor(ABC):
         """
         self.model_type = model_type
         self.version = version
-        self.model = None
+        self.model: Any = None
         self.is_trained = False
         self.feature_names: Optional[list] = None
         self.training_metadata: Dict[str, Any] = {}
