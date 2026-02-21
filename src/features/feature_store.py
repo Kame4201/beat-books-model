@@ -60,7 +60,7 @@ class FeatureStore:
         metadata_file = version_dir / f"metadata_{timestamp}.json"
 
         # Extract season range if available
-        season_range = (None, None)
+        season_range: tuple[int | None, int | None] = (None, None)
         if "season" in features_df.columns:
             season_range = (
                 int(features_df["season"].min()),
