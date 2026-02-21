@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     """Configuration for beat-books-model service."""
 
     # Database (READ-ONLY access to shared DB)
-    DATABASE_URL: str
+    DATABASE_URL: str = ""
 
     # Model artifacts
     MODEL_ARTIFACTS_PATH: str = "model_artifacts"
