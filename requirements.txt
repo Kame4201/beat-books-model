@@ -12,6 +12,10 @@ xgboost
 lightgbm
 joblib
 
+# Web framework
+fastapi
+uvicorn[standard]
+
 # Configuration
 pydantic
 pydantic-settings
