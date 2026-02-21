@@ -5,6 +5,7 @@ psycopg2-binary
 # Data processing
 pandas
 numpy
+pyarrow
 
 # ML models
 scikit-learn
