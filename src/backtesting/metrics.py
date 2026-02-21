@@ -266,6 +266,8 @@ def calculate_clv(
     for p in clv_games:
         # CLV = line we got - closing line
         # Positive CLV means we got a better line
+        assert p.market_spread is not None
+        assert p.closing_line is not None
         our_line = p.market_spread
         closing = p.closing_line
 
