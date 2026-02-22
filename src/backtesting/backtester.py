@@ -35,8 +35,6 @@ from src.backtesting.metrics import (
     calculate_clv,
     calculate_edge_bucket_accuracy,
     calculate_ats_when_disagree,
-    calculate_spread_mae,
-    calculate_cover_rate,
 )
 from src.backtesting.bankroll_sim import (
     BankrollTracker,
