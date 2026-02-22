@@ -1,0 +1,15 @@
+-r requirements.txt
+
+# Linting & formatting
+ruff>=0.4.0
+black>=24.0.0
+
+# Type checking
+mypy>=1.10.0
+
+# Testing extras
+pytest-benchmark>=4.0.0
+hypothesis>=6.0.0
+
+# Type stubs
+types-requests

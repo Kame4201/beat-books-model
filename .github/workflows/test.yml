@@ -2,9 +2,9 @@ name: Test
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, Dev, develop]
   pull_request:
-    branches: [main, develop]
+    branches: [main, Dev, develop]
 
 jobs:
   test:
@@ -29,17 +29,19 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt pytest pytest-cov
+          pip install -r requirements-dev.txt
 
       - name: Cache trained models
         uses: actions/cache@v4
         with:
-          path: models/artifacts/
+          path: model_artifacts/
           key: ${{ runner.os }}-models-${{ hashFiles('src/features/**') }}
 
       - name: Run tests with coverage
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost/test"
         run: |
-          pytest --cov=src --cov-report=xml --cov-report=term --cov-fail-under=0  # TODO: raise to 70 once tests are written
+          pytest -m "not integration" --cov=src --cov-report=xml --cov-report=term --cov-fail-under=0
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
