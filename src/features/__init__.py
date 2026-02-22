@@ -24,6 +24,7 @@ from src.features.validators import (
 __all__ = [
     # Core classes (lazy to avoid requiring DATABASE_URL at import time)
     "FeatureEngineer",
+    "FeatureBuilder",
     "FeatureStore",
     "FeatureMetadata",
     # Configuration
@@ -46,6 +47,10 @@ def __getattr__(name: str):
         from src.features.feature_engineering import FeatureEngineer
 
         return FeatureEngineer
+    if name == "FeatureBuilder":
+        from src.features.feature_builder import FeatureBuilder
+
+        return FeatureBuilder
     if name == "FeatureStore":
         from src.features.feature_store import FeatureStore
 
