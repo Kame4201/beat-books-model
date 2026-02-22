@@ -35,6 +35,8 @@ from src.backtesting.metrics import (
     calculate_clv,
     calculate_edge_bucket_accuracy,
     calculate_ats_when_disagree,
+    calculate_spread_mae,
+    calculate_cover_rate,
 )
 from src.backtesting.bankroll_sim import (
     BankrollTracker,
@@ -54,6 +56,16 @@ class Model(Protocol):
 
     def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
         """Predict probabilities."""
+        ...
+
+
+class SpreadCapableModel(Protocol):
+    """Extended protocol for models that also predict spread."""
+
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> None: ...
+    def predict_proba(self, X: pd.DataFrame) -> np.ndarray: ...
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        """Predict point spread."""
         ...
 
 
@@ -87,6 +99,8 @@ class Backtester:
         model: Model,
         feature_columns: List[str],
         target_column: str = "home_win",
+        spread_model: SpreadCapableModel | None = None,
+        spread_target_column: str = "spread",
     ) -> BacktestResult:
         """
         Run walk-forward backtest.
@@ -99,6 +113,8 @@ class Backtester:
             model: Model instance with fit() and predict_proba() methods
             feature_columns: List of feature column names
             target_column: Target column name (default: "home_win")
+            spread_model: Optional spread prediction model with predict() method
+            spread_target_column: Target column for spread model training
 
         Returns:
             BacktestResult with all metrics and predictions
@@ -154,8 +170,15 @@ class Backtester:
             X_test = test_data[feature_columns]
             probas = model.predict_proba(X_test)
 
+            # Spread predictions (if spread model provided)
+            predicted_spreads = None
+            if spread_model is not None and spread_target_column in train_data.columns:
+                y_train_spread = train_data[spread_target_column]
+                spread_model.fit(X_train, y_train_spread)
+                predicted_spreads = spread_model.predict(X_test)
+
             # Process predictions and simulate betting
-            self._process_predictions(test_data, probas, feature_columns)
+            self._process_predictions(test_data, probas, feature_columns, predicted_spreads)
 
         # Calculate final metrics
         metrics = self._calculate_metrics()
@@ -224,6 +247,7 @@ class Backtester:
         test_data: pd.DataFrame,
         probas: np.ndarray,
         feature_columns: List[str],
+        predicted_spreads: np.ndarray | None = None,
     ):
         """
         Process predictions and simulate betting decisions.
@@ -232,6 +256,7 @@ class Backtester:
             test_data: Test data with actual outcomes
             probas: Predicted probabilities from model
             feature_columns: Feature columns used
+            predicted_spreads: Optional predicted point spreads from a spread model
         """
         for idx, (i, row) in enumerate(test_data.iterrows()):
             # Get prediction (assuming binary classification: [prob_away_win, prob_home_win])
@@ -302,7 +327,7 @@ class Backtester:
                 home_team=str(row["home_team"]),
                 away_team=str(row["away_team"]),
                 predicted_home_win_prob=predicted_home_prob,
-                predicted_spread=0.0,  # TODO: implement spread prediction
+                predicted_spread=float(predicted_spreads[idx]) if predicted_spreads is not None else 0.0,
                 actual_home_win=bool(row["home_win"]),
                 actual_home_score=int(row["home_score"]),
                 actual_away_score=int(row["away_score"]),

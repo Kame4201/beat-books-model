@@ -383,3 +383,57 @@ def calculate_ats_when_disagree(
     win_rate = wins / (wins + losses) if (wins + losses) > 0 else 0.0
 
     return record, win_rate
+
+
+def calculate_spread_mae(predictions: List[PredictionRecord]) -> Optional[float]:
+    """
+    Calculate Mean Absolute Error of spread predictions.
+
+    Only includes predictions where a spread was actually predicted (non-zero).
+
+    Returns:
+        MAE or None if no spread predictions exist
+    """
+    spread_preds = [
+        p for p in predictions
+        if p.predicted_spread != 0.0
+    ]
+    if not spread_preds:
+        return None
+
+    errors = [abs(p.predicted_spread - p.actual_spread) for p in spread_preds]
+    return float(np.mean(errors))
+
+
+def calculate_cover_rate(predictions: List[PredictionRecord]) -> Optional[float]:
+    """
+    Calculate how often our predicted side covers the spread.
+
+    Returns:
+        Cover rate (0.0 to 1.0) or None if no spread predictions
+    """
+    spread_preds = [
+        p for p in predictions
+        if p.predicted_spread != 0.0 and p.market_spread is not None
+    ]
+    if not spread_preds:
+        return None
+
+    covers = 0
+    total = 0
+    for p in spread_preds:
+        assert p.market_spread is not None
+        actual_margin = p.actual_home_score - p.actual_away_score
+
+        # Did our predicted side cover?
+        model_picks_home = p.predicted_spread < 0  # negative spread = home favored
+        if model_picks_home:
+            covered = actual_margin + p.market_spread > 0
+        else:
+            covered = actual_margin + p.market_spread < 0
+
+        if covered:
+            covers += 1
+        total += 1
+
+    return covers / total if total > 0 else None
