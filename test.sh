@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ===========================================================================
-# beat-books-model — Local Test Script
+# beat-books-model -- Local Test Script
 # Run from the repo root:  bash test.sh
 # Or test a single module:  bash test.sh features
 #                           bash test.sh models
@@ -15,11 +15,11 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 BOLD='\033[1m'
 
-pass() { echo -e "  ${GREEN}✔ $1${NC}"; }
-fail() { echo -e "  ${RED}✘ $1${NC}"; FAILURES=$((FAILURES + 1)); }
-skip() { echo -e "  ${YELLOW}⊘ $1${NC}"; }
+pass() { echo -e "  ${GREEN}PASS: $1${NC}"; }
+fail() { echo -e "  ${RED}FAIL: $1${NC}"; FAILURES=$((FAILURES + 1)); }
+skip() { echo -e "  ${YELLOW}SKIP: $1${NC}"; }
 info() { echo -e "${CYAN}$1${NC}"; }
-header() { echo -e "\n${BOLD}${YELLOW}═══ $1 ═══${NC}\n"; }
+header() { echo -e "\n${BOLD}${YELLOW}=== $1 ===${NC}\n"; }
 
 FAILURES=0
 MODULE="${1:-all}"   # optional arg: features | models | backtesting | strategy | all
@@ -32,21 +32,21 @@ run_tests() {
     local label="$2"
 
     if [ ! -d "$dir" ]; then
-        skip "Skipped — $dir not found on this branch"
+        skip "Skipped -- $dir not found on this branch"
         return
     fi
 
     local count
     count=$(find "$dir" -name 'test_*.py' -exec grep -l 'def test_' {} + 2>/dev/null | wc -l)
     if [ "$count" -eq 0 ]; then
-        skip "Skipped — no test functions in $dir"
+        skip "Skipped -- no test functions in $dir"
         return
     fi
 
     if pytest "$dir" -v --tb=short -q; then
-        pass "$label — all tests passed"
+        pass "$label -- all tests passed"
     else
-        fail "$label — test failures"
+        fail "$label -- test failures"
     fi
 }
 
@@ -56,7 +56,7 @@ run_tests() {
 header "Environment Setup"
 
 export DATABASE_URL="${DATABASE_URL:-postgresql://test:test@localhost:5432/test}"
-info "DATABASE_URL set (dummy — no real DB needed for unit tests)"
+info "DATABASE_URL set (dummy -- no real DB needed for unit tests)"
 
 if [ ! -f "requirements.txt" ]; then
     echo -e "${RED}ERROR: Run this from the repo root (where requirements.txt is)${NC}"
@@ -83,23 +83,23 @@ pass "Dependencies installed"
 if [ "$MODULE" = "all" ]; then
     header "Lint (ruff)"
     if ruff check src/; then
-        pass "ruff — no lint errors"
+        pass "ruff -- no lint errors"
     else
-        fail "ruff — lint errors found"
+        fail "ruff -- lint errors found"
     fi
 
     header "Formatting (black)"
     if black --check src/ 2>/dev/null; then
-        pass "black — all files formatted correctly"
+        pass "black -- all files formatted correctly"
     else
-        fail "black — formatting issues (run: black src/)"
+        fail "black -- formatting issues (run: black src/)"
     fi
 
     header "Type Check (mypy)"
     if mypy src/ --ignore-missing-imports 2>/dev/null; then
-        pass "mypy — no type errors"
+        pass "mypy -- no type errors"
     else
-        fail "mypy — type errors found"
+        fail "mypy -- type errors found"
     fi
 fi
 
