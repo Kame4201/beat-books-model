@@ -20,6 +20,7 @@ import pandas as pd
 from src.features.feature_engineering import FeatureEngineer
 from src.features.feature_store import FeatureStore
 from src.features.feature_config import FEATURE_VERSION
+from src.models.base_predictor import BasePredictor
 
 
 def parse_season_range(season_str: str) -> List[int]:
@@ -73,7 +74,7 @@ def run_training_stage(
     train_features: pd.DataFrame,
     model_type: str = "win_loss",
     model_variant: str = "baseline",
-) -> object:
+) -> BasePredictor:
     """
     Train a model on the provided features.
 
@@ -101,8 +102,19 @@ def run_training_stage(
     # schema, we use a simplified approach: drop identifier columns and
     # use the remaining numeric features with a target column.
     feature_cols = [
-        c for c in train_features.columns
-        if c not in ("game_id", "team", "season", "week", "game_date", "won", "point_diff", "opponent")
+        c
+        for c in train_features.columns
+        if c
+        not in (
+            "game_id",
+            "team",
+            "season",
+            "week",
+            "game_date",
+            "won",
+            "point_diff",
+            "opponent",
+        )
         and train_features[c].dtype in ("float64", "int64", "float32", "int32")
     ]
 
@@ -123,7 +135,9 @@ def run_training_stage(
             return model
         y = train_features["point_diff"]
 
-    print(f"  Training {model_type}/{model_variant} on {len(X)} samples, {len(feature_cols)} features...")
+    print(
+        f"  Training {model_type}/{model_variant} on {len(X)} samples, {len(feature_cols)} features..."
+    )
     model.train(X, y)
     print("  Training complete.")
     return model
@@ -227,8 +241,19 @@ def run_pipeline(
     print("\n[4/4] Evaluation")
     if not test_features.empty:
         feature_cols = [
-            c for c in test_features.columns
-            if c not in ("game_id", "team", "season", "week", "game_date", "won", "point_diff", "opponent")
+            c
+            for c in test_features.columns
+            if c
+            not in (
+                "game_id",
+                "team",
+                "season",
+                "week",
+                "game_date",
+                "won",
+                "point_diff",
+                "opponent",
+            )
             and test_features[c].dtype in ("float64", "int64", "float32", "int32")
         ]
 

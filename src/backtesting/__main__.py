@@ -6,11 +6,21 @@ import sys
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run NFL prediction backtests")
-    parser.add_argument("--model-path", required=True, help="Path to trained model (.joblib)")
-    parser.add_argument("--start", required=True, help="Backtest start (season or YYYY-MM-DD)")
-    parser.add_argument("--end", required=True, help="Backtest end (season or YYYY-MM-DD)")
-    parser.add_argument("--bankroll", type=float, default=10000.0, help="Starting bankroll")
-    parser.add_argument("--output-dir", default="backtest_results", help="Results directory")
+    parser.add_argument(
+        "--model-path", required=True, help="Path to trained model (.joblib)"
+    )
+    parser.add_argument(
+        "--start", required=True, help="Backtest start (season or YYYY-MM-DD)"
+    )
+    parser.add_argument(
+        "--end", required=True, help="Backtest end (season or YYYY-MM-DD)"
+    )
+    parser.add_argument(
+        "--bankroll", type=float, default=10000.0, help="Starting bankroll"
+    )
+    parser.add_argument(
+        "--output-dir", default="backtest_results", help="Results directory"
+    )
     args = parser.parse_args()
 
     print(f"Backtesting with model: {args.model_path}")

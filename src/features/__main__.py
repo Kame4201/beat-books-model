@@ -10,8 +10,12 @@ from src.features.feature_store import FeatureStore
 def main() -> int:
     parser = argparse.ArgumentParser(description="Compute NFL prediction features")
     parser.add_argument("--season", type=int, required=True, help="NFL season year")
-    parser.add_argument("--weeks", type=str, default=None, help="Comma-separated weeks (default: all)")
-    parser.add_argument("--save", action="store_true", help="Save features to feature store")
+    parser.add_argument(
+        "--weeks", type=str, default=None, help="Comma-separated weeks (default: all)"
+    )
+    parser.add_argument(
+        "--save", action="store_true", help="Save features to feature store"
+    )
     args = parser.parse_args()
 
     weeks = [int(w) for w in args.weeks.split(",")] if args.weeks else None

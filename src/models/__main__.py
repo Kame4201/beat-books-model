@@ -8,12 +8,24 @@ from pathlib import Path
 def main() -> int:
     parser = argparse.ArgumentParser(description="Train NFL prediction models")
     parser.add_argument("--model", choices=["win_loss", "spread"], required=True)
-    parser.add_argument("--variant", default="baseline", choices=["baseline", "ridge", "xgboost", "lightgbm"])
-    parser.add_argument("--seasons", required=True, help="Season range (e.g., '2020-2024')")
-    parser.add_argument("--output-dir", default="model_artifacts", help="Where to save trained model")
+    parser.add_argument(
+        "--variant",
+        default="baseline",
+        choices=["baseline", "ridge", "xgboost", "lightgbm"],
+    )
+    parser.add_argument(
+        "--seasons", required=True, help="Season range (e.g., '2020-2024')"
+    )
+    parser.add_argument(
+        "--output-dir", default="model_artifacts", help="Where to save trained model"
+    )
     args = parser.parse_args()
 
-    from src.pipeline.runner import parse_season_range, run_feature_stage, run_training_stage
+    from src.pipeline.runner import (
+        parse_season_range,
+        run_feature_stage,
+        run_training_stage,
+    )
 
     seasons = parse_season_range(args.seasons)
     print(f"Training {args.model}/{args.variant} on seasons {seasons}")
