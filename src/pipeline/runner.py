@@ -14,12 +14,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-import numpy as np
 import pandas as pd
 
 from src.features.feature_engineering import FeatureEngineer
 from src.features.feature_store import FeatureStore
-from src.features.feature_config import FEATURE_VERSION
 from src.models.base_predictor import BasePredictor
 
 
@@ -86,6 +84,7 @@ def run_training_stage(
     Returns:
         Trained model instance
     """
+    model: BasePredictor
     if model_type == "win_loss":
         from src.models.win_loss_model import WinLossModel
 
@@ -346,7 +345,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     seasons = parse_season_range(args.seasons)
-    print(f"BeatTheBooks ML Pipeline")
+    print("BeatTheBooks ML Pipeline")
     print(f"  Seasons: {seasons}")
     print(f"  Model: {args.model}/{args.variant}")
     if args.backtest_start:
