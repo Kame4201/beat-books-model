@@ -21,7 +21,6 @@ from sqlalchemy.orm import Session
 from src.features.feature_engineering import FeatureEngineer
 from src.features.feature_store import FeatureStore
 
-
 # ---------------------------------------------------------------------------
 # SQL Queries — all READ-ONLY
 # ---------------------------------------------------------------------------
@@ -123,6 +122,7 @@ def _same_division(team_a: str, team_b: str) -> bool:
 # ---------------------------------------------------------------------------
 # FeatureBuilder
 # ---------------------------------------------------------------------------
+
 
 class FeatureBuilder:
     """
@@ -229,9 +229,7 @@ class FeatureBuilder:
                 {"season": season, "weeks": tuple(weeks)},
             )
         else:
-            result = self.session.execute(
-                GAME_LEVEL_QUERY, {"season": season}
-            )
+            result = self.session.execute(GAME_LEVEL_QUERY, {"season": season})
         rows = result.fetchall()
         if not rows:
             return pd.DataFrame()
@@ -308,9 +306,7 @@ class FeatureBuilder:
 
         return df
 
-    def _enrich_with_season_stats(
-        self, df: pd.DataFrame, season: int
-    ) -> pd.DataFrame:
+    def _enrich_with_season_stats(self, df: pd.DataFrame, season: int) -> pd.DataFrame:
         """
         Fill efficiency columns that aren't available at game level
         using season-level averages from team_offense / team_defense.
@@ -327,40 +323,51 @@ class FeatureBuilder:
         if not offense.empty:
             off_map = offense.set_index("tm")
             games_played = off_map["games_played"].replace(0, 1)  # avoid div/0
-            df["off_points_per_drive"] = df["team"].map(
-                off_map["sc_pct"]
-            ).fillna(0).astype(float)
-            df["off_yards_per_drive"] = df["team"].map(
-                (off_map["yds"] / games_played).round(1)
-            ).fillna(0).astype(float)
-            df["off_red_zone_pct"] = df["team"].map(
-                off_map["sc_pct"]
-            ).fillna(0).astype(float)
+            df["off_points_per_drive"] = (
+                df["team"].map(off_map["sc_pct"]).fillna(0).astype(float)
+            )
+            df["off_yards_per_drive"] = (
+                df["team"]
+                .map((off_map["yds"] / games_played).round(1))
+                .fillna(0)
+                .astype(float)
+            )
+            df["off_red_zone_pct"] = (
+                df["team"].map(off_map["sc_pct"]).fillna(0).astype(float)
+            )
             df["off_third_down_pct"] = 0.0  # Not available in schema
             df["sacks_given"] = 0.0  # Not available at team level
 
         if not defense.empty:
             def_map = defense.set_index("tm")
             games_played = def_map["games_played"].replace(0, 1)
-            df["def_points_per_drive"] = df["team"].map(
-                def_map["sc_pct_allowed"]
-            ).fillna(0).astype(float)
-            df["def_yards_per_drive"] = df["team"].map(
-                (def_map["yds_allowed"] / games_played).round(1)
-            ).fillna(0).astype(float)
-            df["def_red_zone_pct"] = df["team"].map(
-                def_map["sc_pct_allowed"]
-            ).fillna(0).astype(float)
+            df["def_points_per_drive"] = (
+                df["team"].map(def_map["sc_pct_allowed"]).fillna(0).astype(float)
+            )
+            df["def_yards_per_drive"] = (
+                df["team"]
+                .map((def_map["yds_allowed"] / games_played).round(1))
+                .fillna(0)
+                .astype(float)
+            )
+            df["def_red_zone_pct"] = (
+                df["team"].map(def_map["sc_pct_allowed"]).fillna(0).astype(float)
+            )
             df["def_third_down_pct"] = 0.0
             df["sacks_taken"] = 0.0
 
         # Defaults for any columns still missing
         for col in [
-            "off_points_per_drive", "def_points_per_drive",
-            "off_yards_per_drive", "def_yards_per_drive",
-            "off_red_zone_pct", "def_red_zone_pct",
-            "off_third_down_pct", "def_third_down_pct",
-            "sacks_given", "sacks_taken",
+            "off_points_per_drive",
+            "def_points_per_drive",
+            "off_yards_per_drive",
+            "def_yards_per_drive",
+            "off_red_zone_pct",
+            "def_red_zone_pct",
+            "off_third_down_pct",
+            "def_third_down_pct",
+            "sacks_given",
+            "sacks_taken",
         ]:
             if col not in df.columns:
                 df[col] = 0.0
