@@ -178,7 +178,9 @@ class Backtester:
                 predicted_spreads = spread_model.predict(X_test)
 
             # Process predictions and simulate betting
-            self._process_predictions(test_data, probas, feature_columns, predicted_spreads)
+            self._process_predictions(
+                test_data, probas, feature_columns, predicted_spreads
+            )
 
         # Calculate final metrics
         metrics = self._calculate_metrics()
@@ -327,7 +329,11 @@ class Backtester:
                 home_team=str(row["home_team"]),
                 away_team=str(row["away_team"]),
                 predicted_home_win_prob=predicted_home_prob,
-                predicted_spread=float(predicted_spreads[idx]) if predicted_spreads is not None else 0.0,
+                predicted_spread=(
+                    float(predicted_spreads[idx])
+                    if predicted_spreads is not None
+                    else 0.0
+                ),
                 actual_home_win=bool(row["home_win"]),
                 actual_home_score=int(row["home_score"]),
                 actual_away_score=int(row["away_score"]),

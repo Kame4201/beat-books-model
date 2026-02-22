@@ -394,10 +394,7 @@ def calculate_spread_mae(predictions: List[PredictionRecord]) -> Optional[float]
     Returns:
         MAE or None if no spread predictions exist
     """
-    spread_preds = [
-        p for p in predictions
-        if p.predicted_spread != 0.0
-    ]
+    spread_preds = [p for p in predictions if p.predicted_spread != 0.0]
     if not spread_preds:
         return None
 
@@ -413,7 +410,8 @@ def calculate_cover_rate(predictions: List[PredictionRecord]) -> Optional[float]
         Cover rate (0.0 to 1.0) or None if no spread predictions
     """
     spread_preds = [
-        p for p in predictions
+        p
+        for p in predictions
         if p.predicted_spread != 0.0 and p.market_spread is not None
     ]
     if not spread_preds:
