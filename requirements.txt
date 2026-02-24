@@ -5,12 +5,17 @@ psycopg2-binary
 # Data processing
 pandas
 numpy
+pyarrow
 
 # ML models
 scikit-learn
 xgboost
 lightgbm
 joblib
+
+# Web framework
+fastapi
+uvicorn[standard]
 
 # Configuration
 pydantic

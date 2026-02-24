@@ -16,8 +16,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 import uuid
 
-from src.core.config import settings
-
 
 class ModelRegistry:
     """
@@ -37,7 +35,11 @@ class ModelRegistry:
             registry_dir: Directory to store registry and artifacts.
                           Defaults to settings.MODEL_ARTIFACTS_PATH
         """
-        self.registry_dir = Path(registry_dir or settings.MODEL_ARTIFACTS_PATH)
+        if registry_dir is None:
+            from src.core.config import settings
+
+            registry_dir = settings.MODEL_ARTIFACTS_PATH
+        self.registry_dir = Path(registry_dir)
         self.registry_dir.mkdir(parents=True, exist_ok=True)
         self.registry_file = self.registry_dir / "registry.json"
         self._load_or_create_registry()
