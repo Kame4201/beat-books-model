@@ -9,6 +9,10 @@ Provides:
 - Model configurations and hyperparameters
 """
 
+from src.models.base_predictor import BasePredictor
+from src.models.win_loss_model import WinLossModel
+from src.models.spread_model import SpreadModel
+from src.models.model_registry import ModelRegistry
 from src.models.model_config import (
     get_config,
     WIN_LOSS_CONFIGS,
