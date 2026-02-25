@@ -7,10 +7,31 @@ Supports versioning and metadata tracking to ensure reproducibility.
 import pandas as pd
 import json
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 from datetime import datetime
 
 from src.features.feature_config import FeatureMetadata, FEATURE_VERSION
+
+
+def _has_parquet_engine() -> bool:
+    """Check if a usable parquet engine is available."""
+    try:
+        import pyarrow  # noqa: F401
+
+        return True
+    except ImportError:
+        pass
+    try:
+        import fastparquet  # noqa: F401
+
+        return True
+    except ImportError:
+        pass
+    return False
+
+
+_USE_PARQUET = _has_parquet_engine()
+_EXT = ".parquet" if _USE_PARQUET else ".csv"
 
 
 class FeatureStore:
@@ -56,11 +77,11 @@ class FeatureStore:
 
         # Generate timestamped filename (microseconds to avoid collisions)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-        feature_file = version_dir / f"features_{timestamp}.parquet"
+        feature_file = version_dir / f"features_{timestamp}{_EXT}"
         metadata_file = version_dir / f"metadata_{timestamp}.json"
 
         # Extract season range if available
-        season_range: tuple[int | None, int | None] = (None, None)
+        season_range: Tuple[Optional[int], Optional[int]] = (None, None)
         if "season" in features_df.columns:
             season_range = (
                 int(features_df["season"].min()),
@@ -78,8 +99,11 @@ class FeatureStore:
             additional_info=additional_info or {},
         )
 
-        # Save features as parquet (efficient columnar format)
-        features_df.to_parquet(feature_file, index=False, compression="snappy")
+        # Save features (parquet if available, CSV fallback)
+        if _USE_PARQUET:
+            features_df.to_parquet(feature_file, index=False, compression="snappy")
+        else:
+            features_df.to_csv(feature_file, index=False)
 
         # Save metadata as JSON
         with open(metadata_file, "w") as f:
@@ -112,15 +136,21 @@ class FeatureStore:
         if not version_dir.exists():
             raise FileNotFoundError(f"No features found for version {version}")
 
-        # Find feature files
-        feature_files = sorted(version_dir.glob("features_*.parquet"))
+        # Find feature files (support both parquet and csv)
+        feature_files = sorted(version_dir.glob("features_*.parquet")) or sorted(
+            version_dir.glob("features_*.csv")
+        )
 
         if not feature_files:
             raise FileNotFoundError(f"No feature files found in {version_dir}")
 
         # Select file
         if timestamp:
-            feature_file = version_dir / f"features_{timestamp}.parquet"
+            # Try both extensions
+            feature_file = version_dir / f"features_{timestamp}{_EXT}"
+            if not feature_file.exists():
+                alt_ext = ".csv" if _EXT == ".parquet" else ".parquet"
+                feature_file = version_dir / f"features_{timestamp}{alt_ext}"
             metadata_file = version_dir / f"metadata_{timestamp}.json"
 
             if not feature_file.exists():
@@ -133,7 +163,10 @@ class FeatureStore:
             metadata_file = version_dir / f"metadata_{timestamp_str}.json"
 
         # Load features
-        features_df = pd.read_parquet(feature_file)
+        if feature_file.suffix == ".parquet":
+            features_df = pd.read_parquet(feature_file)
+        else:
+            features_df = pd.read_csv(feature_file)
 
         # Load metadata
         with open(metadata_file, "r") as f:
@@ -177,7 +210,9 @@ class FeatureStore:
         if not version_dir.exists():
             return []
 
-        feature_files = sorted(version_dir.glob("features_*.parquet"))
+        feature_files = sorted(version_dir.glob("features_*.parquet")) or sorted(
+            version_dir.glob("features_*.csv")
+        )
         timestamps = [f.stem.replace("features_", "") for f in feature_files]
 
         return timestamps

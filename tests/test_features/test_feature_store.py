@@ -7,7 +7,7 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from src.features.feature_store import FeatureStore
+from src.features.feature_store import FeatureStore, _EXT
 from src.features.feature_config import FeatureMetadata
 
 
@@ -47,12 +47,12 @@ def test_save_features(temp_feature_store, sample_features_df):
 
     # Check that files were created
     assert feature_file.exists()
-    assert feature_file.suffix == ".parquet"
+    assert feature_file.suffix == _EXT
 
     # Check metadata file
     metadata_file = feature_file.parent / feature_file.name.replace(
         "features_", "metadata_"
-    ).replace(".parquet", ".json")
+    ).replace(_EXT, ".json")
     assert metadata_file.exists()
 
 
