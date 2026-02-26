@@ -21,10 +21,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-
 # ---------------------------------------------------------------------------
 # Data model
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class GameSentiment:
@@ -61,7 +61,10 @@ class GameSentiment:
 
         Positive = sharp money on home team (money % > bet %).
         """
-        if self.public_money_pct_home is not None and self.public_bet_pct_home is not None:
+        if (
+            self.public_money_pct_home is not None
+            and self.public_bet_pct_home is not None
+        ):
             return self.public_money_pct_home - self.public_bet_pct_home
         return None
 
@@ -72,10 +75,7 @@ class GameSentiment:
 
         This is a classic sharp money signal.
         """
-        if (
-            self.line_movement is not None
-            and self.public_bet_pct_home is not None
-        ):
+        if self.line_movement is not None and self.public_bet_pct_home is not None:
             public_on_home = self.public_bet_pct_home > 50
             line_moved_toward_home = self.line_movement < 0
             return public_on_home != line_moved_toward_home
@@ -86,12 +86,26 @@ class GameSentiment:
         rlm = self.reverse_line_movement
         div = self.money_vs_bet_divergence
         return {
-            "sent_public_bet_pct_home": self.public_bet_pct_home if self.public_bet_pct_home is not None else 50.0,
+            "sent_public_bet_pct_home": (
+                self.public_bet_pct_home
+                if self.public_bet_pct_home is not None
+                else 50.0
+            ),
             "sent_money_vs_bet_divergence": div if div is not None else 0.0,
-            "sent_line_movement": self.line_movement if self.line_movement is not None else 0.0,
+            "sent_line_movement": (
+                self.line_movement if self.line_movement is not None else 0.0
+            ),
             "sent_reverse_line_movement": float(rlm) if rlm is not None else 0.0,
-            "sent_news_sentiment_home": self.news_sentiment_home if self.news_sentiment_home is not None else 0.0,
-            "sent_news_sentiment_away": self.news_sentiment_away if self.news_sentiment_away is not None else 0.0,
+            "sent_news_sentiment_home": (
+                self.news_sentiment_home
+                if self.news_sentiment_home is not None
+                else 0.0
+            ),
+            "sent_news_sentiment_away": (
+                self.news_sentiment_away
+                if self.news_sentiment_away is not None
+                else 0.0
+            ),
             "sent_is_revenge_game": float(self.is_revenge_game),
             "sent_is_prime_time": float(self.is_prime_time),
             "sent_is_divisional": float(self.is_divisional),
@@ -104,18 +118,26 @@ class GameSentiment:
 # Provider interface
 # ---------------------------------------------------------------------------
 
+
 class SentimentProvider(ABC):
     """Abstract base for sentiment / public betting data backends."""
 
     @abstractmethod
     def get_game_sentiment(
-        self, game_id: str, home_team: str, away_team: str,
-        season: int, week: int,
+        self,
+        game_id: str,
+        home_team: str,
+        away_team: str,
+        season: int,
+        week: int,
     ) -> GameSentiment:
         """Return sentiment data for a single game."""
 
     def get_week_sentiment(
-        self, games: List[Dict[str, str]], season: int, week: int,
+        self,
+        games: List[Dict[str, str]],
+        season: int,
+        week: int,
     ) -> List[GameSentiment]:
         """Fetch sentiment for all games in a week. Default: iterate."""
         return [
@@ -134,8 +156,12 @@ class NullSentimentProvider(SentimentProvider):
     """
 
     def get_game_sentiment(
-        self, game_id: str, home_team: str, away_team: str,
-        season: int, week: int,
+        self,
+        game_id: str,
+        home_team: str,
+        away_team: str,
+        season: int,
+        week: int,
     ) -> GameSentiment:
         return GameSentiment(
             game_id=game_id,
@@ -159,8 +185,12 @@ class FixtureSentimentProvider(SentimentProvider):
         self._data = data
 
     def get_game_sentiment(
-        self, game_id: str, home_team: str, away_team: str,
-        season: int, week: int,
+        self,
+        game_id: str,
+        home_team: str,
+        away_team: str,
+        season: int,
+        week: int,
     ) -> GameSentiment:
         if game_id in self._data:
             return self._data[game_id]
