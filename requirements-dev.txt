@@ -6,6 +6,7 @@ black>=24.0.0
 
 # Type checking
 mypy>=1.10.0
+types-requests
 
 # Testing
 pytest-benchmark>=4.0.0
