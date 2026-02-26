@@ -12,15 +12,14 @@ modifies database tables.
 
 from __future__ import annotations
 
-import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-
 # ---------------------------------------------------------------------------
 # Data model
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class GameWeather:
@@ -43,7 +42,7 @@ class GameWeather:
             t = self.temperature_f
             v = self.wind_speed_mph
             self.wind_chill = (
-                35.74 + 0.6215 * t - 35.75 * (v ** 0.16) + 0.4275 * t * (v ** 0.16)
+                35.74 + 0.6215 * t - 35.75 * (v**0.16) + 0.4275 * t * (v**0.16)
             )
         else:
             self.wind_chill = self.temperature_f
@@ -58,7 +57,9 @@ class GameWeather:
             "weather_precipitation_in": self.precipitation_inches,
             "weather_humidity_pct": self.humidity_pct,
             "weather_is_dome": float(self.is_dome),
-            "weather_wind_chill": self.wind_chill if self.wind_chill is not None else self.temperature_f,
+            "weather_wind_chill": (
+                self.wind_chill if self.wind_chill is not None else self.temperature_f
+            ),
         }
 
 
@@ -107,6 +108,7 @@ STADIUM_COORDINATES: Dict[str, tuple[float, float, bool]] = {
 # Provider interface
 # ---------------------------------------------------------------------------
 
+
 class WeatherProvider(ABC):
     """Abstract base for weather data backends."""
 
@@ -116,9 +118,7 @@ class WeatherProvider(ABC):
     ) -> GameWeather:
         """Return weather for a single game."""
 
-    def get_bulk_weather(
-        self, games: List[Dict[str, str]]
-    ) -> List[GameWeather]:
+    def get_bulk_weather(self, games: List[Dict[str, str]]) -> List[GameWeather]:
         """Fetch weather for multiple games. Default: iterate."""
         return [
             self.get_game_weather(g["game_id"], g["home_team"], g["game_date"])
