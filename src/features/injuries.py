@@ -14,15 +14,16 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional
-
+from typing import Dict, List
 
 # ---------------------------------------------------------------------------
 # Data model
 # ---------------------------------------------------------------------------
 
+
 class InjuryStatus(str, Enum):
     """NFL injury designations."""
+
     ACTIVE = "active"
     QUESTIONABLE = "questionable"
     DOUBTFUL = "doubtful"
@@ -33,6 +34,7 @@ class InjuryStatus(str, Enum):
 
 class Position(str, Enum):
     """Positional categories for weighting."""
+
     QB = "QB"
     RB = "RB"
     WR = "WR"
@@ -75,6 +77,7 @@ STATUS_MISS_PROBABILITY: Dict[InjuryStatus, float] = {
 @dataclass
 class PlayerInjury:
     """Injury report entry for a single player."""
+
     player_name: str
     position: Position
     status: InjuryStatus
@@ -84,6 +87,7 @@ class PlayerInjury:
 @dataclass
 class TeamInjuryReport:
     """Aggregate injury report for one team for one game."""
+
     team: str
     game_id: str
     injuries: List[PlayerInjury] = field(default_factory=list)
@@ -136,6 +140,7 @@ class TeamInjuryReport:
 # Provider interface
 # ---------------------------------------------------------------------------
 
+
 class InjuryProvider(ABC):
     """Abstract base for injury/roster data backends."""
 
@@ -146,8 +151,12 @@ class InjuryProvider(ABC):
         """Return injury report for a team in a specific game week."""
 
     def get_game_injuries(
-        self, home_team: str, away_team: str, game_id: str,
-        season: int, week: int,
+        self,
+        home_team: str,
+        away_team: str,
+        game_id: str,
+        season: int,
+        week: int,
     ) -> Dict[str, TeamInjuryReport]:
         """Return injury reports for both teams."""
         return {
