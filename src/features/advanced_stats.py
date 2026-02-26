@@ -12,12 +12,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, List, Optional
-
+from typing import Dict, Optional
 
 # ---------------------------------------------------------------------------
 # Data model
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class TeamAdvancedStats:
@@ -49,12 +49,28 @@ class TeamAdvancedStats:
         return {
             "adv_cpoe": self.cpoe if self.cpoe is not None else 0.0,
             "adv_ryoe": self.ryoe if self.ryoe is not None else 0.0,
-            "adv_avg_separation": self.avg_separation if self.avg_separation is not None else 0.0,
-            "adv_avg_time_to_throw": self.avg_time_to_throw if self.avg_time_to_throw is not None else 0.0,
-            "adv_pff_offense_grade": self.pff_offense_grade if self.pff_offense_grade is not None else 0.0,
-            "adv_pff_defense_grade": self.pff_defense_grade if self.pff_defense_grade is not None else 0.0,
-            "adv_pff_pass_block_grade": self.pff_pass_block_grade if self.pff_pass_block_grade is not None else 0.0,
-            "adv_pff_run_block_grade": self.pff_run_block_grade if self.pff_run_block_grade is not None else 0.0,
+            "adv_avg_separation": (
+                self.avg_separation if self.avg_separation is not None else 0.0
+            ),
+            "adv_avg_time_to_throw": (
+                self.avg_time_to_throw if self.avg_time_to_throw is not None else 0.0
+            ),
+            "adv_pff_offense_grade": (
+                self.pff_offense_grade if self.pff_offense_grade is not None else 0.0
+            ),
+            "adv_pff_defense_grade": (
+                self.pff_defense_grade if self.pff_defense_grade is not None else 0.0
+            ),
+            "adv_pff_pass_block_grade": (
+                self.pff_pass_block_grade
+                if self.pff_pass_block_grade is not None
+                else 0.0
+            ),
+            "adv_pff_run_block_grade": (
+                self.pff_run_block_grade
+                if self.pff_run_block_grade is not None
+                else 0.0
+            ),
         }
 
 
@@ -62,13 +78,12 @@ class TeamAdvancedStats:
 # Provider interface
 # ---------------------------------------------------------------------------
 
+
 class AdvancedStatsProvider(ABC):
     """Abstract base for advanced-stats backends."""
 
     @abstractmethod
-    def get_team_stats(
-        self, team: str, season: int, week: int
-    ) -> TeamAdvancedStats:
+    def get_team_stats(self, team: str, season: int, week: int) -> TeamAdvancedStats:
         """Return advanced stats for a team in a given week."""
 
     def get_game_stats(
@@ -87,9 +102,7 @@ class NullAdvancedStatsProvider(AdvancedStatsProvider):
     Use until NGS / PFF API access is configured.
     """
 
-    def get_team_stats(
-        self, team: str, season: int, week: int
-    ) -> TeamAdvancedStats:
+    def get_team_stats(self, team: str, season: int, week: int) -> TeamAdvancedStats:
         return TeamAdvancedStats(team=team, season=season, week=week)
 
 
@@ -110,9 +123,7 @@ class FixtureAdvancedStatsProvider(AdvancedStatsProvider):
     def _key(team: str, season: int, week: int) -> str:
         return f"{team}-{season}-{week}"
 
-    def get_team_stats(
-        self, team: str, season: int, week: int
-    ) -> TeamAdvancedStats:
+    def get_team_stats(self, team: str, season: int, week: int) -> TeamAdvancedStats:
         key = self._key(team, season, week)
         if key in self._data:
             return self._data[key]
