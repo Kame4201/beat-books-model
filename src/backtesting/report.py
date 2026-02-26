@@ -21,10 +21,10 @@ from typing import Optional
 
 from src.backtesting.types import BacktestResult
 
-
 # ---------------------------------------------------------------------------
 # Lightweight HTML builder
 # ---------------------------------------------------------------------------
+
 
 def _metric_row(label: str, value, fmt: str = ".4f") -> str:
     if value is None:
@@ -40,10 +40,11 @@ def _try_bankroll_chart_base64(result: BacktestResult) -> Optional[str]:
         return None
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
-        dates = list(result.bankroll_curve.keys())
+        list(result.bankroll_curve.keys())
         values = list(result.bankroll_curve.values())
 
         fig, ax = plt.subplots(figsize=(8, 3))
@@ -80,6 +81,7 @@ def _bankroll_text_table(result: BacktestResult) -> str:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def generate_html_report(result: BacktestResult) -> str:
     """
