@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from itertools import product
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import pandas as pd
 
@@ -40,8 +40,11 @@ class TuningResult:
     def best_trial(self) -> TuningTrial:
         if not self.trials:
             raise ValueError("No trials recorded")
-        key = lambda t: t.metrics.get(self.optimize_metric, float("-inf"))
-        return (max if self.higher_is_better else min)(self.trials, key=key)
+
+        def _score(t: TuningTrial) -> float:
+            return t.metrics.get(self.optimize_metric, float("-inf"))
+
+        return (max if self.higher_is_better else min)(self.trials, key=_score)
 
     def to_dataframe(self) -> pd.DataFrame:
         rows = []
