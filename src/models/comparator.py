@@ -37,7 +37,7 @@ class ComparisonReport:
         """Flatten entries into a DataFrame for easy inspection."""
         rows = []
         for e in self.entries:
-            row = {"model_type": e.model_type, "variant": e.variant}
+            row: dict[str, object] = {"model_type": e.model_type, "variant": e.variant}
             row.update(e.metrics)
             rows.append(row)
         return pd.DataFrame(rows)

@@ -181,19 +181,20 @@ class OpenMeteoWeatherProvider(WeatherProvider):
         try:
             import requests  # optional dependency
 
+            params: dict[str, str | float] = {
+                "latitude": lat,
+                "longitude": lon,
+                "start_date": game_date,
+                "end_date": game_date,
+                "daily": "temperature_2m_mean,windspeed_10m_max,precipitation_sum,relative_humidity_2m_mean",
+                "temperature_unit": "fahrenheit",
+                "windspeed_unit": "mph",
+                "precipitation_unit": "inch",
+                "timezone": "America/New_York",
+            }
             resp = requests.get(
                 self.API_URL,
-                params={
-                    "latitude": lat,
-                    "longitude": lon,
-                    "start_date": game_date,
-                    "end_date": game_date,
-                    "daily": "temperature_2m_mean,windspeed_10m_max,precipitation_sum,relative_humidity_2m_mean",
-                    "temperature_unit": "fahrenheit",
-                    "windspeed_unit": "mph",
-                    "precipitation_unit": "inch",
-                    "timezone": "America/New_York",
-                },
+                params=params,
                 timeout=10,
             )
             resp.raise_for_status()
