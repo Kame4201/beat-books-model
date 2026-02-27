@@ -117,7 +117,7 @@ def build_inference_features_synthetic(
 
 def _get_team_stats(session: Session, team: str, season: int) -> dict:
     """Fetch aggregated stats for a single team."""
-    stats: dict[str, float] = {"team": team}
+    stats: dict[str, object] = {"team": team}
 
     # Offense
     result = session.execute(TEAM_SEASON_STATS_QUERY, {"season": season, "team": team})

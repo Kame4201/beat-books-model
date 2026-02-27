@@ -173,7 +173,7 @@ def _run_prediction(
         )
 
     # Predict
-    win_prob = float(model.get_win_probabilities(features_df)[0])
+    win_prob = float(model.predict_proba(features_df)[0, 1])
     predicted_spread = round((0.5 - win_prob) * 14.0, 1)  # rough spread estimate
 
     # Confidence bucket
