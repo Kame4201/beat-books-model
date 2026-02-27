@@ -206,13 +206,16 @@ def _build_features(
     feature_names: list[str],
 ):
     """Try to build features from the database."""
-    from src.core.db_reader import get_read_session
+    from src.core.db_reader import SessionLocal
     from src.features.inference_features import build_inference_features
 
-    with get_read_session() as session:
+    session = SessionLocal()
+    try:
         return build_inference_features(
             session, home_team, away_team, season, feature_names
         )
+    finally:
+        session.close()
 
 
 @app.get("/model/info", response_model=ModelInfoResponse)
