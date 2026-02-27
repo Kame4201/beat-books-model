@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     # Model artifacts
     MODEL_ARTIFACTS_PATH: str = "model_artifacts"
+    MODEL_ID: str = ""  # Override to load a specific model; empty = best by accuracy
 
     # Feature engineering
     DEFAULT_ROLLING_WINDOWS: str = "3,5,10"  # game windows for rolling averages
