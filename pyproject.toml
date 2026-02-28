@@ -1,0 +1,15 @@
+[tool.pytest.ini_options]
+markers = [
+    "integration: tests requiring database or external services (deselect with '-m \"not integration\"')",
+]
+addopts = "--strict-markers"
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "src/main.py",
+]
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = true
